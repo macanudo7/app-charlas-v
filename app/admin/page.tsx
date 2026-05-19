@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { charlas } from "@/lib/schema";
 import { desc } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export default async function AdminDashboard() {
   // 1. Verificación de seguridad en el servidor
@@ -72,7 +73,7 @@ export default async function AdminDashboard() {
             <select className="w-full bg-white border border-gray-300 rounded px-4 py-2 pr-8 shadow-sm appearance-none focus:outline-none focus:border-[#1b1c54] text-sm">
               <option>Buscar charla</option>
               {listaCharlas.map((c) => (
-                <option key={c.id} value={c.id}>{c.titulo}</option>
+                <option key={c.id} value={c.id}>{c.nombreEvento}</option>
               ))}
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
@@ -81,9 +82,9 @@ export default async function AdminDashboard() {
           </div>
 
           {/* Botón Agregar Charla */}
-          <button className="w-full sm:w-auto bg-[#1b1c54] hover:bg-[#272974] text-white text-xs font-bold tracking-wider uppercase px-6 py-2.5 rounded shadow transition-all duration-200">
+          <Link href="/charla" className="w-full sm:w-auto bg-[#1b1c54] hover:bg-[#272974] text-white text-xs font-bold tracking-wider uppercase px-6 py-2.5 rounded shadow transition-all duration-200">
             + Agregar Charla
-          </button>
+          </Link>
         </div>
 
         {/* TABLA DE CHARLAS */}
@@ -126,7 +127,7 @@ export default async function AdminDashboard() {
                       
                       {/* Título de la Charla */}
                       <td className="py-4 px-6 font-medium text-gray-900">
-                        {charla.titulo}
+                        {charla.nombreEvento}
                       </td>
                       
                       {/* Estado */}

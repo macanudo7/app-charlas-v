@@ -1,4 +1,4 @@
-import { pgTable, serial, text, varchar, timestamp, integer, boolean, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, varchar, timestamp, integer, boolean, primaryKey, json } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // 1. Tabla de Usuarios (Administradores del sistema)
@@ -14,11 +14,13 @@ export const users = pgTable("users", {
 // 2. Tabla de Charlas
 export const charlas = pgTable("charlas", {
   id: serial("id").primaryKey(),
-  titulo: text("titulo").notNull(),
-  expositor: text("expositor").notNull(),
+  nombreEvento: text("nombre_evento").notNull(),
+  slug: text("slug").notNull().unique(),
   fecha: timestamp("fecha").notNull(),
-  cupos: integer("cupos").default(50),
-  lugar: text("lugar"),
+  tituloFormulario: text("titulo_formulario").notNull(),
+  banner: text("banner"),      
+  fondoBanner: text("fondo_banner"), 
+  logos: json("logos").default([]),
   activo: boolean("activo").default(true),
 });
 
