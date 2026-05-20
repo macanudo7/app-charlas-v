@@ -78,3 +78,50 @@ export async function crearCharla(prevState: string | undefined, formData: FormD
     redirect("/admin");
   }
 }
+
+export async function consultarDni(dni: string) {
+  if (!dni || dni.length !== 8) {
+    return { success: false, error: "El DNI debe tener 8 dígitos." };
+  }
+
+  try {
+    // REEMPLAZA AQUÍ con la URL real de tu proveedor y tu Token secreto
+    const url = `https://api.decolecta.com/v1/reniec/dni?numero=${dni}`;
+    const token = process.env.API_DNI_TOKEN; // Guardado seguro en tu .env de la Mac
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      // Cacheamos por 1 hora por si el usuario borra y vuelve a escribir el DNI
+      next: { revalidate: 3600 } 
+    });
+
+    if (!response.ok) {
+      return { success: false, error: "No se pudo conectar con el servicio de Reniec." };
+    }
+
+    const data = await response.json();
+
+    console.log("=== RESPUESTA DE TU API DE DNI ===", data);
+
+    // Mapeamos la respuesta según lo que te devuelva tu API externa
+    // (Por lo general devuelven: nombres, apellidoPaterno, apellidoMaterno)
+    // MODIFICADO PARA TU API REAL (Cristian Romel Flores Conde 🚀)
+    if (data && data.first_name) {
+      return {
+        success: true,
+        nombre: data.first_name, // 'CRISTIAN ROMEL'
+        apellido: `${data.first_last_name} ${data.second_last_name}`.trim() // 'FLORES CONDE'
+      };
+    }
+
+    return { success: false, error: "DNI no encontrado en el padrón." };
+
+  } catch (error) {
+    console.error("Error consultando DNI externo:", error);
+    return { success: false, error: "Error interno al consultar el documento." };
+  }
+}
