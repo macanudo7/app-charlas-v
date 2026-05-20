@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${exo2.variable} h-full antialiased`}
+      className={`${exo2.variable} h-full antialiased scroll-smooth`}
     >
       <body className="min-h-full flex flex-col">
         <main>
