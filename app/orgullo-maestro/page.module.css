@@ -1,0 +1,113 @@
+.orgulloBanner{
+    background: url(/img/bg-concreteras-form.webp);
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    padding-bottom: 100px;
+}
+.orgulloBanner::before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.7);
+    z-index: 1;
+}
+.orgulloBanner img{
+    z-index: 3;
+}
+.orgulloBanner svg{
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 150px;
+    z-index: 2;
+    transform: rotateX(-180deg);
+}
+.orgulloBanner svg path{
+    fill: #010159;
+}
+.orgulloForm{
+    background: url(/img/bg-concreteras-banner.webp);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    padding-bottom: 100px;
+    position: relative;
+}
+.orgulloForm:before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, #010159 10%, #0101598c 50%, #0101598c 50%, #010159 90%);
+}
+.orgulloForm>div{
+    padding-top: 100px;
+}
+.orgulloGoTo{
+    width: fit-content;
+    z-index: 4;
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.orgulloGoTo svg{
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+    background: var(--accent-color);
+    transform: rotate(90deg);
+    -webkit-box-shadow: 8px -8px 10px -1px rgba(0,0,0,0.5);
+    -moz-box-shadow: 8px -8px 10px -1px rgba(0,0,0,0.5);
+    box-shadow: 8px -8px 10px -1px rgba(0,0,0,0.5);
+}
+.orgulloGoTo svg path{
+    fill: #010159;
+}
+.orgulloFormTitle{ 
+    color: var(--accent-color);
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+.orgulloFooter{
+    background: url(/img/bg-concreteras-footer.webp);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    padding: 50px 0;
+    position: relative;
+    background-attachment: fixed;
+}
+.orgulloFooter:before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000030c5;
+}
+.orgulloFooterTitle{
+    color: #ffffff;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+@media (max-width: 768px) {
+    .orgulloBanner img{
+        height: 70vh;
+    }
+    .orgulloBanner svg{
+        height: 80px;
+    }
+    .orgulloGoTo{
+        top: -40px;
+    }
+}
