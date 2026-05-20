@@ -1,17 +1,15 @@
 .navbar {
   display: flex;
   align-items: center;
-
   padding: 20px;
   background: var(--main-color);
 }
+
 .navbarLogin {
   justify-content: flex-start;
 }
 
-.logo {
-  
-}
+
 
 .menu {
   display: flex;
@@ -23,4 +21,30 @@
 .menu a {
   color: white;
   text-decoration: none;
+}
+
+.navbarBtn a {
+  padding: 10px 25px;
+  color: #fff;
+  border: 2px solid #fff;
+  font-size: 14px;
+  transition: 300ms;
+}
+
+.navbarBtn a:hover {
+  background: var(--dark-accent-color);
+}
+
+@media (max-width: 768px) {
+  .logo img{
+    height: 30px;
+    width: auto;
+  }
+  .navbarContainer{
+    padding-inline: 0;
+  }
+  .navbarBtn a{
+    padding: 8px 15px;
+    font-size: 12px;
+  }
 }
