@@ -16,53 +16,13 @@ export default async function AdminDashboard() {
   const listaCharlas = await db.select().from(charlas).orderBy(desc(charlas.fecha));
 
   return (
-    <div className="min-h-screen bg-[#eaeaea] font-sans text-gray-800">
-      
-      {/* HEADER CORPORATIVO (NAVBAR) */}
-      <header className="bg-[#1b1c54] text-white px-6 py-4 flex justify-between items-center shadow-md">
-        {/* Logo Yura */}
-        <div className="flex flex-col items-start select-none">
-          <span className="text-xs tracking-widest uppercase font-semibold text-gray-300">CEMENTO</span>
-          <span className="text-3xl font-black tracking-tighter leading-none">YURA</span>
-        </div>
-
-        {/* Menú de Navegación Derecho */}
-        <nav className="flex items-center space-x-8 text-sm font-medium">
-          <a href="/admin" className="flex flex-col items-center hover:text-cyan-400 transition-colors">
-            <svg className="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-            </svg>
-            Charlas
-          </a>
-          <a href="/admin/participantes" className="flex flex-col items-center hover:text-cyan-400 transition-colors text-gray-300">
-            <svg className="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            Participantes
-          </a>
-          
-          {/* Botón Cerrar Sesión integrado en Formulario para Server Action */}
-          <form
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/login" });
-            }}
-          >
-            <button type="submit" className="flex flex-col items-center hover:text-red-400 transition-colors text-gray-300">
-              <svg className="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Cerrar sesión
-            </button>
-          </form>
-        </nav>
-      </header>
+    <div className="bg-default min-h-screen">
 
       {/* CONTENIDO PRINCIPAL */}
-      <main className="max-w-6xl mx-auto px-4 py-12">
+      <div className="max-w-6xl mx-auto px-4 py-14">
         
         {/* Título Central */}
-        <h1 className="text-center text-3xl font-bold tracking-wide text-[#1b1c54] mb-12 uppercase">
+        <h1 className="text-center text-3xl font-semibold tracking-wide text-[var(--main-color)] mb-12 uppercase">
           Lista de Charlas
         </h1>
 
@@ -82,18 +42,18 @@ export default async function AdminDashboard() {
           </div>
 
           {/* Botón Agregar Charla */}
-          <Link href="/charla" className="w-full sm:w-auto bg-[#1b1c54] hover:bg-[#272974] text-white text-xs font-bold tracking-wider uppercase px-6 py-2.5 rounded shadow transition-all duration-200">
+          <Link href="/charla" className="w-full sm:w-auto bg-[var(--main-color)] hover:bg-[var(--dark-color)] text-white text-xs font-medium tracking-wider uppercase px-6 py-2.5 shadow transition-all duration-200">
             + Agregar Charla
           </Link>
         </div>
 
         {/* TABLA DE CHARLAS */}
-        <div className="bg-white rounded shadow-md overflow-hidden">
+        <div className="bg-white shadow-md overflow-hidden">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[#1b1c54] text-white text-xs tracking-wider uppercase font-semibold">
-                <th className="py-3 px-6 text-center w-32">Fecha</th>
-                <th className="py-3 px-6">Charla</th>
+              <tr className="bg-[var(--main-color)] text-white text-xs tracking-wider uppercase font-semibold">
+                <th className="py-3 px-6 text-center w-40">Fecha</th>
+                <th className="py-3 px-6 text-center">Charla</th>
                 <th className="py-3 px-6 text-center w-32">Estado</th>
                 <th className="py-3 px-6 text-center w-36">Acciones</th>
               </tr>
@@ -121,7 +81,7 @@ export default async function AdminDashboard() {
                   return (
                     <tr key={charla.id} className="hover:bg-gray-50 transition-colors">
                       {/* Fecha */}
-                      <td className="py-4 px-6 text-center font-mono text-gray-600">
+                      <td className="py-4 px-6 text-center text-gray-600">
                         {fechaFormateada}
                       </td>
                       
@@ -173,7 +133,7 @@ export default async function AdminDashboard() {
           </table>
         </div>
 
-      </main>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,136 @@
+.eventBanner{
+    background: url(/img/bg-concreteras-form.webp);
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    padding-bottom: 100px;
+}
+.eventBanner::before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.7);
+    z-index: 1;
+}
+.eventBanner img{
+    z-index: 3;
+}
+.eventBanner svg{
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 150px;
+    z-index: 2;
+    transform: rotateX(-180deg);
+}
+.eventBanner svg path{
+    fill: #010159;
+}
+.eventForm{
+    background: url(/img/bg-concreteras-banner.webp);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    padding-bottom: 100px;
+    position: relative;
+}
+.eventForm:before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, #010159 10%, #0101598c 50%, #0101598c 50%, #010159 90%);
+}
+.eventForm>div{
+    padding-top: 100px;
+}
+.eventForm.eventForm.eventForm label{
+    color: #fff;
+    margin-top: 15px;
+    font-weight: 400;
+}
+.eventGoTo{
+    width: fit-content;
+    z-index: 4;
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.eventGoTo svg{
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+    background: var(--accent-color);
+    transform: rotate(90deg);
+    -webkit-box-shadow: 8px -8px 10px -1px rgba(0,0,0,0.5);
+    -moz-box-shadow: 8px -8px 10px -1px rgba(0,0,0,0.5);
+    box-shadow: 8px -8px 10px -1px rgba(0,0,0,0.5);
+}
+.eventGoTo svg path{
+    fill: #010159;
+}
+.eventFormTitle{ 
+    color: var(--accent-color);
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+.eventFooter{
+    background: url(/img/bg-concreteras-footer.webp);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    padding: 50px 0;
+    position: relative;
+    background-attachment: fixed;
+}
+.eventFooter:before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000030c5;
+}
+.eventFooterTitle{
+    color: #ffffff;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+.eventBtn {
+    border: 2px solid #fff;
+    font-size: 16px;
+    background: transparent;
+}
+.eventBtn:hover{
+    background: var(--dark-accent-color);
+}
+.eventFormDesc.eventFormDesc.eventFormDesc{
+    text-align: center;
+    color: #ffffff;
+}
+.eventFormBtn2.eventFormBtn2.eventFormBtn2{
+    background: var(--dark-accent-color);
+}
+.eventFormBtn2.eventFormBtn2.eventFormBtn2:hover{
+    background: var(--accent-color);
+}
+@media (max-width: 768px) {
+    .eventBanner img{
+        height: 70vh;
+    }
+    .eventBanner svg{
+        height: 80px;
+    }
+    .eventGoTo{
+        top: -40px;
+    }
+}
