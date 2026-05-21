@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, use } from "react";
+import { useState, use, useEffect } from "react";
+import { useRouter } from "next/navigation"; // Importante: usar de next/navigation
+import { getSession } from "next-auth/react"; // Helper de NextAuth para cliente
 import { consultarDni } from "@/lib/actions";
 import Image from "next/image";
 import eventStyle from "@/app/evento/[slug]/page.module.css";
@@ -15,6 +17,10 @@ interface EventoPageProps {
 // Aquí nos enfocamos en la lógica del formulario interactivo:
 
 export default function EventoPublicPage({ params }: EventoPageProps) {
+
+  
+
+  
   const { slug } = use(params); // Desempaquetamos el slug en cliente
 
   // Estados para el autocompletado y carga
