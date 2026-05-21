@@ -22,7 +22,7 @@ export default function CreateCharlaForm() {
   };
 
   return (
-    <form action={dispatch} encType="multipart/form-data" className="space-y-6 bg-white p-8 rounded shadow-md">
+    <form action={dispatch} encType="multipart/form-data" className="space-y-6 p-4">
       {errorMessage && (
         <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded text-sm">
           {errorMessage}
@@ -32,28 +32,28 @@ export default function CreateCharlaForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Nombre del Evento */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-            Nombre del Evento *
+          <label className="block text-xs font-bold uppercase mb-2">
+            Nombre del Evento <span>*</span>
           </label>
           <input
             type="text" name="nombreEvento" required
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#1b1c54]"
+            className="w-full border border-gray-300 text-sm focus:outline-none focus:border-[#1b1c54]"
             placeholder="Ej: Capacitación Planta Yura 2026"
           />
         </div>
 
         {/* URL / Slug */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-            URL del Evento (Slug) *
+          <label className="block text-xs font-bold uppercase mb-2">
+            URL del Evento (Slug) <span>*</span>
           </label>
           <div className="flex rounded-md shadow-sm">
-            <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+            <span className="inline-flex items-center px-3 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
               charlas.yura.com.pe/
             </span>
             <input
               type="text" name="slug" required
-              className="w-full border border-gray-300 rounded-r px-3 py-2 text-sm focus:outline-none focus:border-[#1b1c54]"
+              className="w-full border border-gray-300 text-sm focus:outline-none focus:border-[#1b1c54]"
               placeholder="seguridad-planta-yura"
             />
           </div>
@@ -61,31 +61,31 @@ export default function CreateCharlaForm() {
 
         {/* Fecha del Evento */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-            Fecha y Hora del Evento *
+          <label className="block text-xs font-bold uppercase mb-2">
+            Fecha y Hora del Evento <span>*</span>
           </label>
           <input
             type="datetime-local" name="fecha" required
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#1b1c54]"
+            className="w-full border border-gray-300 text-sm focus:outline-none focus:border-[#1b1c54]"
           />
         </div>
 
         {/* Título del Formulario */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-            Título del Formulario *
+          <label className="block text-xs font-bold uppercase mb-2">
+            Título sobre el Formulario <span>*</span>
           </label>
           <input
             type="text" name="tituloFormulario" required
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#1b1c54]"
-            placeholder="Inscríbete ingresando tus datos"
+            className="w-full border border-gray-300 text-sm focus:outline-none focus:border-[#1b1c54]"
+            placeholder="Ej: Inscríbete ingresando tus datos"
           />
         </div>
 
         {/* Banner del Evento (Imagen Principal) */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-            Banner del Evento (Imagen Principal)
+          <label className="block text-xs font-bold uppercase mb-2">
+            Banner del Evento <span>*</span> <span>(Imagen sin fondo en .png, en proporción 1:1 idealmente)</span>
           </label>
           <input
             type="file" name="banner" accept="image/*"
@@ -95,8 +95,8 @@ export default function CreateCharlaForm() {
 
         {/* Imagen de Fondo del Banner (CAMBIADO A FILE) */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-            Imagen de Fondo del Banner
+          <label className="block text-xs font-bold uppercase mb-2">
+            Imagen de Fondo para el Banner <span></span> <span>(Opcional, por defecto usará un fondo de cemento)</span>
           </label>
           <input
             type="file" name="fondoBanner" accept="image/*"
@@ -106,9 +106,9 @@ export default function CreateCharlaForm() {
       </div>
 
       {/* Logos de Organizadores (Array de imágenes) */}
-      <div className="border-t pt-6">
-        <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-          Logos de Organizadores (Array de Imágenes - Máximo 9)
+      <div className="pt-2">
+        <label className="block text-xs font-bold uppercase mb-2">
+          Logos de Organizadores (Grupo de Imágenes - Máximo 9)
         </label>
         <input
           type="file" name="logos" multiple accept="image/*" onChange={handleLogoChange}
@@ -121,7 +121,7 @@ export default function CreateCharlaForm() {
 
       {/* Botones */}
       <div className="flex justify-end space-x-4 border-t pt-6">
-        <a href="/admin" className="px-5 py-2 rounded text-sm font-medium border border-gray-300 hover:bg-gray-50 transition-colors">
+        <a href="/admin" className="px-5 py-2 text-sm font-medium border border-gray-300 hover:bg-gray-50 transition-colors">
           Cancelar
         </a>
         <SubmitButton />
@@ -135,9 +135,9 @@ function SubmitButton() {
   return (
     <button
       type="submit" disabled={pending}
-      className="bg-[#1b1c54] hover:bg-[#252774] text-white px-6 py-2 rounded text-sm font-semibold tracking-wide shadow disabled:bg-gray-400 transition-all"
+      className="bg-[#1b1c54] hover:bg-[#252774] text-white px-6 py-2 text-sm font-semibold tracking-wide shadow disabled:bg-gray-400 transition-all"
     >
-      {pending ? "Guardando e Imágnes..." : "Crear Evento"}
+      {pending ? "Creando evento..." : "Crear Evento"}
     </button>
   );
 }

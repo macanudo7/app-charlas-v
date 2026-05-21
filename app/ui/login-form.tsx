@@ -13,7 +13,7 @@ export default function LoginForm() {
       <div className="flex-1 px-6 pb-4 pt-8">
         <div className="w-full">
           <div>
-            <label className="mb-3 mt-5 block text-xs font-medium text-gray-900" htmlFor="email">
+            <label className="mb-3 mt-5 block text-xs font-medium" htmlFor="email">
               Correo electrónico <span>*</span>
             </label>
             <input
@@ -22,7 +22,7 @@ export default function LoginForm() {
             />
           </div>
           <div className="mt-4">
-            <label className="mb-3 mt-5 block text-xs font-medium text-gray-900" htmlFor="password">
+            <label className="mb-3 mt-5 block text-xs font-medium" htmlFor="password">
               Contraseña <span>*</span>
             </label>
             <input

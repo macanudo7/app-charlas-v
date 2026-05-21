@@ -5,24 +5,35 @@
   background: var(--main-color);
 }
 
+/* NAV - LOGIN */
 .navbarLogin {
   justify-content: flex-start;
 }
 
-
-
+/* NAV - ADMIN */
 .menu {
   display: flex;
   gap: 20px;
-
   list-style: none;
 }
-
-.menu a {
+.menu a,
+.menu button {
   color: white;
   text-decoration: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+.menu svg {
+  margin-bottom: 8px;
+  width: 24px;
+  height: 28px;
+}
+.menu a:hover,
+.menu button:hover {
+  color: var(--accent-color);
 }
 
+/* NAV - USERS */
 .navbarBtn a {
   padding: 10px 25px;
   color: #fff;
@@ -36,15 +47,28 @@
 }
 
 @media (max-width: 768px) {
-  .logo img{
+  .logo img {
     height: 30px;
     width: auto;
   }
-  .navbarContainer{
+
+  .navbarContainer {
     padding-inline: 0;
   }
-  .navbarBtn a{
+
+  /* NAV - USERS */
+  .navbarBtn a {
     padding: 8px 15px;
     font-size: 12px;
+  }
+
+  /* NAV - ADMIN */
+  .menu{
+    gap: 30px;
+  }
+  .menu a span,
+  .menu button span {
+    display: none;
+
   }
 }
