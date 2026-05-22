@@ -1,11 +1,16 @@
 'use client';
 
 import { useState, use, useEffect } from "react";
-import { useRouter } from "next/navigation"; // Importante: usar de next/navigation
-import { getSession } from "next-auth/react"; // Helper de NextAuth para cliente
 import { consultarDni } from "@/lib/actions";
 import Image from "next/image";
 import eventStyle from "@/app/evento/[slug]/page.module.css";
+import { obtenerDepartamentos, obtenerProvinciasPorDepartamento, obtenerDistritosPorProvincia} from "@/lib/actions";
+
+// Estructura interna para los combos
+interface UbigeoItem {
+  id: string;
+  nombre: string;
+}
 
 interface EventoPageProps {
   params: Promise<{ slug: string }>;
@@ -20,6 +25,47 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
 
   
 
+  // Estados para Ubigeo Dinámico
+  const [listas, setListas] = useState<{
+    departamentos: UbigeoItem[];
+    provincias: UbigeoItem[];
+    distritos: UbigeoItem[];
+  }>({ departamentos: [], provincias: [], distritos: [] });
+
+  const [seleccion, setSeleccion] = useState({
+    departamento: "",
+    provincia: "",
+    distrito: ""
+  });
+
+  // Cargar departamentos del SQL al montar la pantalla
+  useEffect(() => {
+    obtenerDepartamentos().then((data) => {
+      setListas(prev => ({ ...prev, departamentos: data }));
+    });
+  }, []);
+
+  // Al cambiar Departamento -> Cargar Provincias reales
+  const handleCambioDepartamento = async (idDep: string) => {
+    setSeleccion({ departamento: idDep, provincia: "", distrito: "" });
+    setListas(prev => ({ ...prev, provincias: [], distritos: [] }));
+    
+    if (idDep) {
+      const provs = await obtenerProvinciasPorDepartamento(idDep);
+      setListas(prev => ({ ...prev, provincias: provs }));
+    }
+  };
+
+  // Al cambiar Provincia -> Cargar Distritos reales
+  const handleCambioProvincia = async (idProv: string) => {
+    setSeleccion(prev => ({ ...prev, provincia: idProv, distrito: "" }));
+    setListas(prev => ({ ...prev, distritos: [] }));
+
+    if (idProv) {
+      const dists = await obtenerDistritosPorProvincia(idProv);
+      setListas(prev => ({ ...prev, distritos: dists }));
+    }
+  };
   
   const { slug } = use(params); // Desempaquetamos el slug en cliente
 
@@ -209,22 +255,70 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
                 </div>
 
 
-                {/* UBICACIÓN */}
-                <div className="pt-2 mt-2">
-
+                {/* UBICACIÓN DINÁMICA */}
+                <div className="border-t pt-4 mt-6">
+                  <span className="block text-xs font-black uppercase tracking-widest text-[#1b1c54] mb-3">
+                    Datos de Ubicación Oficial
+                  </span>
+                  
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    
+                    {/* DEPARTAMENTO */}
                     <div>
-                      <label className="block text-[11px] font-bold uppercase mb-1">Departamento <span>*</span></label>
-                      <input type="text" name="departamento" maxLength={100} className="w-full border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:border-[#1b1c54]" placeholder="Arequipa" />
+                      <label className="block text-[11px] font-bold uppercase text-gray-600 mb-1">
+                        Departamento
+                      </label>
+                      <select
+                        name="departamento"
+                        value={seleccion.departamento}
+                        onChange={(e) => handleCambioDepartamento(e.target.value)}
+                        className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm bg-white focus:outline-none focus:border-[#1b1c54]"
+                      >
+                        <option value="">-- Seleccione --</option>
+                        {listas.departamentos.map((dep) => (
+                          <option key={dep.id} value={dep.id}>{dep.nombre}</option>
+                        ))}
+                      </select>
                     </div>
+
+                    {/* PROVINCIA */}
                     <div>
-                      <label className="block text-[11px] font-bold uppercase mb-1">Provincia <span>*</span></label>
-                      <input type="text" name="provincia" maxLength={100} className="w-full border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:border-[#1b1c54]" placeholder="Arequipa" />
+                      <label className="block text-[11px] font-bold uppercase text-gray-600 mb-1">
+                        Provincia
+                      </label>
+                      <select
+                        name="provincia"
+                        value={seleccion.provincia}
+                        disabled={!seleccion.departamento}
+                        onChange={(e) => handleCambioProvincia(e.target.value)}
+                        className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm bg-white disabled:bg-gray-100 focus:outline-none focus:border-[#1b1c54]"
+                      >
+                        <option value="">-- Seleccione --</option>
+                        {listas.provincias.map((prov) => (
+                          <option key={prov.id} value={prov.id}>{prov.nombre}</option>
+                        ))}
+                      </select>
                     </div>
+
+                    {/* DISTRITO */}
                     <div>
-                      <label className="block text-[11px] font-bold uppercase mb-1">Distrito <span>*</span></label>
-                      <input type="text" name="distrito" maxLength={100} className="w-full border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:border-[#1b1c54]" placeholder="Yura" />
+                      <label className="block text-[11px] font-bold uppercase text-gray-600 mb-1">
+                        Distrito
+                      </label>
+                      <select
+                        name="distrito"
+                        value={seleccion.distrito}
+                        disabled={!seleccion.provincia}
+                        onChange={(e) => setSeleccion(prev => ({ ...prev, distrito: e.target.value }))}
+                        className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm bg-white disabled:bg-gray-100 focus:outline-none focus:border-[#1b1c54]"
+                      >
+                        <option value="">-- Seleccione --</option>
+                        {listas.distritos.map((dist) => (
+                          <option key={dist.id} value={dist.id}>{dist.nombre}</option>
+                        ))}
+                      </select>
                     </div>
+
                   </div>
                 </div>
 

@@ -1,4 +1,4 @@
-import { pgTable, serial, text, varchar, timestamp, integer, boolean, primaryKey, json } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, varchar, timestamp, integer, boolean, primaryKey, json, foreignKey } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // 1. Tabla de Usuarios (Administradores del sistema)
@@ -50,3 +50,24 @@ export const inscripciones = pgTable("inscripciones", {
   // Definimos una clave primaria compuesta para evitar duplicados
   pk: primaryKey({ columns: [t.charlaId, t.participanteId] }),
 }));
+
+// 1. Tabla de Departamentos
+export const ubigeoPeruDepartments = pgTable("ubigeo_peru_departments", {
+  id: varchar("id", { length: 2 }).primaryKey(),
+  name: varchar("name", { length: 45 }).notNull(),
+});
+
+// 2. Tabla de Provincias
+export const ubigeoPeruProvinces = pgTable("ubigeo_peru_provinces", {
+  id: varchar("id", { length: 4 }).primaryKey(),
+  name: varchar("name", { length: 45 }).notNull(),
+  departmentId: varchar("department_id", { length: 2 }),
+});
+
+// 3. Tabla de Distritos
+export const ubigeoPeruDistricts = pgTable("ubigeo_peru_districts", {
+  id: varchar("id", { length: 6 }).primaryKey(),
+  name: varchar("name", { length: 45 }).notNull(),
+  provinceId: varchar("province_id", { length: 4 }),
+  departmentId: varchar("department_id", { length: 2 }),
+});

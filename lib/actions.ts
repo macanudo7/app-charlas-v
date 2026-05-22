@@ -1,10 +1,11 @@
 'use server';
 
 import { db } from "@/lib/db";
-import { charlas } from "@/lib/schema";
+import { charlas, ubigeoPeruDepartments, ubigeoPeruProvinces, ubigeoPeruDistricts } from "@/lib/schema";
 import { redirect } from "next/navigation";
 import { writeFile, mkdir } from "node:fs/promises";
 import { join } from "path";
+import { eq, and, isNull } from 'drizzle-orm';
 
 export async function crearCharla(prevState: string | undefined, formData: FormData) {
   let subidaExitosa = false;
@@ -124,4 +125,29 @@ export async function consultarDni(dni: string) {
     console.error("Error consultando DNI externo:", error);
     return { success: false, error: "Error interno al consultar el documento." };
   }
+}
+
+// 1. Traer todos los departamentos
+export async function obtenerDepartamentos() {
+  return await db
+    .select({ id: ubigeoPeruDepartments.id, nombre: ubigeoPeruDepartments.name })
+    .from(ubigeoPeruDepartments);
+}
+
+// 2. Traer provincias según el departamento seleccionado
+export async function obtenerProvinciasPorDepartamento(departamentoId: string) {
+  if (!departamentoId) return [];
+  return await db
+    .select({ id: ubigeoPeruProvinces.id, nombre: ubigeoPeruProvinces.name })
+    .from(ubigeoPeruProvinces)
+    .where(eq(ubigeoPeruProvinces.departmentId, departamentoId));
+}
+
+// 3. Traer distritos según la provincia seleccionada
+export async function obtenerDistritosPorProvincia(provinciaId: string) {
+  if (!provinciaId) return [];
+  return await db
+    .select({ id: ubigeoPeruDistricts.id, nombre: ubigeoPeruDistricts.name })
+    .from(ubigeoPeruDistricts)
+    .where(eq(ubigeoPeruDistricts.provinceId, provinciaId));
 }
