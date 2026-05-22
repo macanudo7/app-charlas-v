@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from "@/lib/db";
-import { charlas, ubigeoPeruDepartments, ubigeoPeruProvinces, ubigeoPeruDistricts } from "@/lib/schema";
+import { charlas, ubigeoPeruDepartments, ubigeoPeruProvinces, ubigeoPeruDistricts, participantes } from "@/lib/schema";
 import { redirect } from "next/navigation";
 import { writeFile, mkdir } from "node:fs/promises";
 import { join } from "path";
@@ -150,4 +150,54 @@ export async function obtenerDistritosPorProvincia(provinciaId: string) {
     .select({ id: ubigeoPeruDistricts.id, nombre: ubigeoPeruDistricts.name })
     .from(ubigeoPeruDistricts)
     .where(eq(ubigeoPeruDistricts.provinceId, provinciaId));
+}
+
+export async function registrarParticipante(data: {
+  dni: string;
+  nombre: string;
+  apellido: string;
+  correo?: string;
+  area?: string;
+  departamento?: string;
+  provincia?: string;
+  distrito?: string;
+}) {
+  // 1. Validaciones básicas de seguridad del lado del servidor
+  if (!data.dni || data.dni.length !== 8) {
+    return { success: false, error: "El DNI es obligatorio y debe tener 8 dígitos." };
+  }
+  if (!data.nombre || !data.apellido) {
+    return { success: false, error: "El nombre y apellido son obligatorios." };
+  }
+
+  try {
+    // 2. Verificar si el participante ya se registró antes en el sistema global
+    const [existe] = await db
+      .select()
+      .from(participantes)
+      .where(eq(participantes.dni, data.dni))
+      .limit(1);
+
+    if (existe) {
+      return { success: false, error: "Este DNI ya se encuentra registrado en el evento." };
+    }
+
+    // 3. Insertar el registro en la tabla de Supabase usando Drizzle
+    await db.insert(participantes).values({
+      dni: data.dni,
+      nombre: data.nombre,
+      apellido: data.apellido,
+      correo: data.correo || null,
+      area: data.area || null,
+      departamento: data.departamento || null,
+      provincia: data.provincia || null,
+      distrito: data.distrito || null,
+    });
+
+    return { success: true };
+
+  } catch (error) {
+    console.error("Error al insertar participante:", error);
+    return { success: false, error: "Hubo un error interno al guardar tu registro. Inténtalo de nuevo." };
+  }
 }
