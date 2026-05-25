@@ -108,7 +108,7 @@ export default function CreateCharlaForm() {
       {/* Logos de Organizadores (Array de imágenes) */}
       <div className="pt-2">
         <label className="block text-xs font-bold uppercase mb-2">
-          Logos de Organizadores (Grupo de Imágenes - Máximo 9)
+          Logos de Organizadores (Máx 9) <span></span> <span>(Opcional, incluye por defecto el logo de Yura, seleccionar las imágenes en .png de forma agrupada)</span>
         </label>
         <input
           type="file" name="logos" multiple accept="image/*" onChange={handleLogoChange}

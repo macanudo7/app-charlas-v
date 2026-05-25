@@ -1,5 +1,5 @@
 .eventBanner{
-    background: url(/img/bg-concreteras-form.webp);
+    /* background: url(/img/bg-concreteras-form.webp); */
     background-size: cover;
     background-position: center;
     position: relative;
@@ -122,6 +122,18 @@
 }
 .eventFormBtn2.eventFormBtn2.eventFormBtn2:hover{
     background: var(--accent-color);
+}
+.eventFormSucess{
+    color: var(--main-color);
+    background: #dadeff;
+    border-color: var(--dark-accent-color);
+}
+.eventFormSucess button{
+    background: var(--main-color);
+    cursor: pointer;
+}
+.eventFormSucess button:hover{
+    background: var(--dark-accent-color);
 }
 @media (max-width: 768px) {
     .eventBanner img{

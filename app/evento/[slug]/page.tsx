@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { consultarDni } from "@/lib/actions";
 import Image from "next/image";
 import eventStyle from "@/app/evento/[slug]/page.module.css";
-import { obtenerDepartamentos, obtenerProvinciasPorDepartamento, obtenerDistritosPorProvincia, registrarParticipante} from "@/lib/actions";
+import { obtenerDepartamentos, obtenerProvinciasPorDepartamento, obtenerDistritosPorProvincia, registrarParticipante } from "@/lib/actions";
 
 // Estructura interna para los combos
 interface UbigeoItem {
@@ -27,6 +27,27 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
   const { slug } = use(params); // Desempaquetamos el slug en cliente
   const router = useRouter();
 
+  interface Evento {
+    id: number
+    nombreEvento: string
+    slug: string
+    banner: string | null
+    fondoBanner: string | null
+    tituloFormulario: string
+    logos: string[] | null
+  }
+
+  const [evento, setEvento] = useState<Evento | null>(null)
+
+  useEffect(() => {
+
+    const cargarEvento = async () => {
+      const res = await fetch(`/api/evento/${slug}`)
+      const data = await res.json()
+      setEvento(data)
+    }
+    cargarEvento()
+  }, [slug])
 
   // Estados para Ubigeo Dinámico
   const [listas, setListas] = useState<{
@@ -52,7 +73,7 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
   const handleCambioDepartamento = async (idDep: string) => {
     setSeleccion({ departamento: idDep, provincia: "", distrito: "" });
     setListas(prev => ({ ...prev, provincias: [], distritos: [] }));
-    
+
     if (idDep) {
       const provs = await obtenerProvinciasPorDepartamento(idDep);
       setListas(prev => ({ ...prev, provincias: provs }));
@@ -69,8 +90,8 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
       setListas(prev => ({ ...prev, distritos: dists }));
     }
   };
-  
-  
+
+
 
   // Estados para el autocompletado y carga
   const [dni, setDni] = useState("");
@@ -102,7 +123,7 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
       nombre,
       apellido,
       correo,
-      area:"",
+      area: "",
       departamento: nombreDep,
       provincia: nombreProv,
       distrito: nombreDist
@@ -149,12 +170,14 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
     <div className="min-h-screen bg-[#eaeaea] text-gray-800 flex flex-col justify-between">
 
       {/* BANNER INSTITUCIONAL YURA */}
-      <div className={`${eventStyle.eventBanner} flex items-center justify-center`}>
+      <div className={`${eventStyle.eventBanner} flex items-center justify-center`}
+      style={{ backgroundImage: `url(${evento?.fondoBanner || "/img/bg-concreteras-form.webp"})` }}
+      >
         <div className="relative mx-auto flex w-full flex-col space-y-1.5 p-4">
           <div className="flex w-full items-center justify-center">
             <Image
-              src="/img/bg-forms-yura.png"
-              alt="Orgullo Maestro Banner"
+              src={evento?.banner || "/img/bg-forms-yura.png"}
+              alt={evento?.nombreEvento || "Banner del evento Yura"}
               width={1000}
               height={1000}
               className="h-[75vh] w-auto object-contain"
@@ -180,15 +203,15 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
 
         <div className="relative mx-auto flex w-full flex-col gap-4 p-4 max-w-6xl">
           <div className="p-3" id="formulario">
-            
+
             {/* Controlamos si se muestra el mensaje de éxito o los campos del formulario */}
             {mensajeExito ? (
-              <div className="bg-emerald-50 border border-emerald-400 text-emerald-800 p-8 rounded text-center space-y-4 max-w-2xl mx-auto my-10 shadow-md">
-                <span className="text-4xl">🎉</span>
-                <p className="text-base font-bold uppercase tracking-wide">{mensajeExito}</p>
-                <button 
-                  onClick={() => setMensajeExito("")} 
-                  className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded uppercase tracking-wider font-bold transition-all"
+              <div className="{`${eventStyle.eventFormSucess} border p-8 rounded text-center space-y-4 max-w-2xl mx-auto my-10 shadow-md`}">
+                <span className="text-4xl">✅</span>
+                <p className="text-base font-bold uppercase tracking-wide mt-3">{mensajeExito}</p>
+                <button
+                  onClick={() => setMensajeExito("")}
+                  className="text-xs text-white px-5 py-2.5 rounded uppercase tracking-wider font-bold transition-all"
                 >
                   Registrar otro participante
                 </button>
@@ -196,7 +219,7 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
             ) : (
               <>
                 <div className={`${eventStyle.eventFormTitle} font-bold text-xl md:text-3xl pb-4`}>
-                  Acompáñenos en esta importante<br />capacitación del sector
+                  {evento?.tituloFormulario || "Acompáñenos en este importante<br />evento del sector"}
                 </div>
                 <p className={`${eventStyle.eventFormDesc} text-white-500 mt-1`}>
                   Digita tu DNI y presiona la lupa para buscar tus datos en RENIEC de forma automática.
@@ -287,8 +310,8 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
                           Correo Electrónico <span className="text-red-500">*</span>
                         </label>
                         <input
-                          type="email" 
-                          name="correo" 
+                          type="email"
+                          name="correo"
                           required
                           value={correo}
                           onChange={(e) => setCorreo(e.target.value)}
@@ -303,8 +326,8 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
                           Celular <span className="text-red-500">*</span>
                         </label>
                         <input
-                          type="tel" 
-                          name="telefono" 
+                          type="tel"
+                          name="telefono"
                           required
                           value={telefono}
                           onChange={(e) => setTelefono(e.target.value.replace(/[^0-9]/g, ""))} // Solo números en celular
@@ -315,11 +338,8 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
                     </div>
 
                     {/* UBICACIÓN DINÁMICA DE SUPABASE */}
-                    <div className="border-t pt-4 mt-6">
-                      <span className="block text-xs font-black uppercase tracking-widest text-[#1b1c54] mb-3">
-                        Datos de Ubicación Oficial
-                      </span>
-                      
+                    <div className="">
+
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {/* DEPARTAMENTO */}
                         <div>
@@ -417,14 +437,26 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
             <div className={`${eventStyle.eventFooterTitle} font-bold text-2xl pb-4`}>
               Organizado por:
             </div>
-            <div className="flex items-center justify-start gap-4 mt-4 pt-4">
+            <div className="flex items-center justify-center md:justify-start gap-8 mt-4 pt-4 flex-wrap">
               <Image
                 src="/img/logo-yura.png"
                 alt="Yura Logo"
                 width={200}
                 height={200}
-                className="h-auto w-full max-w-40 object-contain"
+                className="h-auto w-full max-w-40 object-contain mt-4"
               />
+              {evento?.logos?.map((logo) => (
+
+                <Image
+                  key={logo}
+                  src={logo}
+                  alt="Logo organizador"
+                  width={180}
+                  height={180}
+                  className="mt-4"
+                />
+
+              ))}
             </div>
           </div>
         </div>
