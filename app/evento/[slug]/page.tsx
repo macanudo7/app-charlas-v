@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { consultarDni } from "@/lib/actions";
 import Image from "next/image";
 import eventStyle from "@/app/evento/[slug]/page.module.css";
-import { obtenerDepartamentos, obtenerProvinciasPorDepartamento, obtenerDistritosPorProvincia, registrarParticipante } from "@/lib/actions";
+import { obtenerDepartamentos, obtenerProvinciasPorDepartamento, obtenerDistritosPorProvincia, registrarParticipante} from "@/lib/actions";
 
 // Estructura interna para los combos
 interface UbigeoItem {
@@ -15,6 +15,16 @@ interface UbigeoItem {
 
 interface EventoPageProps {
   params: Promise<{ slug: string }>;
+}
+
+interface Evento {
+  id: number
+  nombreEvento: string
+  slug: string
+  banner: string | null
+  fondoBanner: string | null
+  tituloFormulario: string
+  logos: string[] | null
 }
 
 // Nota: Como ahora es un Client Component, si necesitas traer la 'charla' de la BD al cargar,
@@ -27,16 +37,8 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
   const { slug } = use(params); // Desempaquetamos el slug en cliente
   const router = useRouter();
 
-  interface Evento {
-    id: number
-    nombreEvento: string
-    slug: string
-    banner: string | null
-    fondoBanner: string | null
-    tituloFormulario: string
-    logos: string[] | null
-  }
 
+  // Traer la información registrada de la creación del evento para mostrarlo en el front
   const [evento, setEvento] = useState<Evento | null>(null)
 
   useEffect(() => {
@@ -123,7 +125,7 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
       nombre,
       apellido,
       correo,
-      area: "",
+      area:"",
       departamento: nombreDep,
       provincia: nombreProv,
       distrito: nombreDist
@@ -171,7 +173,7 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
 
       {/* BANNER INSTITUCIONAL YURA */}
       <div className={`${eventStyle.eventBanner} flex items-center justify-center`}
-      style={{ backgroundImage: `url(${evento?.fondoBanner || "/img/bg-concreteras-form.webp"})` }}
+        style={{ backgroundImage: `url(${evento?.fondoBanner || "/img/bg-concreteras-form.webp"})` }}
       >
         <div className="relative mx-auto flex w-full flex-col space-y-1.5 p-4">
           <div className="flex w-full items-center justify-center">
