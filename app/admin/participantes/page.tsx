@@ -58,21 +58,46 @@ export default async function ParticipantesPage({ searchParams }: PageProps) {
                   <tr className="bg-[#1b1c54] text-white text-xs font-bold uppercase tracking-wider">
                     <th className="py-3 px-4">DNI</th>
                     <th className="py-3 px-4">Participante</th>
+                    <th className="py-3 px-4">Capacitación (Slug)</th> {/* 👈 Nueva columna */}
                     <th className="py-3 px-4">Contacto</th>
                     <th className="py-3 px-4">Ubicación (Ubigeo)</th>
                     <th className="py-3 px-4 text-center">F. Registro</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 text-sm text-gray-700">
-                  {listaParticipantes.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="py-3.5 px-4 font-mono font-bold text-gray-900">{item.dni}</td>
-                      <td className="py-3.5 px-4 font-medium uppercase">{item.apellido}, {item.nombre}</td>
-                      <td className="py-3.5 px-4 font-mono text-xs text-gray-500">{item.correo || "Sin correo"}</td>
+                  {listaParticipantes.map((item, index) => (
+                    // Usamos una combinación de ID y charlaId para garantizar una key única por fila repetida
+                    <tr key={`${item.id}-${item.charlaId}-${index}`} className="hover:bg-gray-50 transition-colors">
+                      
+                      {/* DNI */}
+                      <td className="py-3.5 px-4 font-mono font-bold text-gray-900">
+                        {item.dni}
+                      </td>
+
+                      {/* Nombre y Apellidos */}
+                      <td className="py-3.5 px-4 font-medium uppercase">
+                        {item.apellido}, {item.nombre}
+                      </td>
+
+                      {/* 🚀 CAPACITACIÓN SLUG (Nueva celda renderizada) */}
+                      <td className="py-3.5 px-4">
+                        <span className="bg-cyan-50 border border-cyan-300 text-cyan-800 text-xs font-mono font-bold px-2 py-1 rounded lowercase">
+                          {item.charlaSlug}
+                        </span>
+                      </td>
+
+                      {/* Correo */}
+                      <td className="py-3.5 px-4 font-mono text-xs text-gray-500">
+                        {item.correo || "Sin correo"}
+                      </td>
+
+                      {/* Ubicación */}
                       <td className="py-3.5 px-4">
                         {item.departamento ? (
                           <div className="text-xs space-x-1 uppercase">
-                            <span className="bg-gray-100 px-1.5 py-0.5 rounded font-bold text-gray-600 border">{item.departamento}</span>
+                            <span className="bg-gray-100 px-1.5 py-0.5 rounded font-bold text-gray-600 border">
+                              {item.departamento}
+                            </span>
                             <span className="text-gray-400">/</span>
                             <span>{item.provincia}</span>
                             <span className="text-gray-400">/</span>
@@ -82,15 +107,19 @@ export default async function ParticipantesPage({ searchParams }: PageProps) {
                           <span className="text-xs text-gray-400 italic">No especificado</span>
                         )}
                       </td>
+
+                      {/* Fecha (Usamos la fecha de la inscripción, no de creación del usuario) */}
                       <td className="py-3.5 px-4 text-center font-mono text-xs text-gray-500">
-                        {item.createdAt ? new Date(item.createdAt).toLocaleDateString("es-PE", {
+                        {item.fechaInscripcion ? new Date(item.fechaInscripcion).toLocaleDateString("es-PE", {
                           day: "2-digit",
                           month: "2-digit",
                           year: "numeric",
                           hour: "2-digit",
-                          minute: "2-digit"
+                          minute: "2-digit",
+                          hour12: true
                         }) : "-"}
                       </td>
+
                     </tr>
                   ))}
                 </tbody>

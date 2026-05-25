@@ -130,7 +130,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
       departamento: nombreDep,
       provincia: nombreProv,
       distrito: nombreDist,
-      charlaId: charlaId
+      slug: slug
     });
 
     setGuardando(false);

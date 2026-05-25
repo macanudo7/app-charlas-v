@@ -161,7 +161,7 @@ export async function registrarParticipante(data: {
   departamento?: string;
   provincia?: string;
   distrito?: string;
-  charlaId: number;
+  slug: string;
 }) {
   // 1. Validaciones básicas de seguridad del lado del servidor
   if (!data.dni || data.dni.length !== 8) {
@@ -175,16 +175,32 @@ export async function registrarParticipante(data: {
   }
 
   try {
-    // 1. Buscar si el participante ya existe en la base de datos general por su DNI
+
+    console.log(data); 
+    // 🚀 NUEVO: Buscar el ID real de la charla usando el slug directamente en el servidor
+    const [charlaReal] = await db
+      .select({ id: charlas.id })
+      .from(charlas)
+      .where(eq(charlas.slug, data.slug))
+      .limit(1);
+
+    
+
+    if (!charlaReal) {
+      return { success: false, error: "La capacitación seleccionada no existe o fue dada de baja." };
+    }
+
+
+    // 2. Buscar si el participante ya existe en la base de datos por su DNI
     let [participante] = await db
       .select()
       .from(participantes)
       .where(eq(participantes.dni, data.dni))
       .limit(1);
 
-    // 2. Si no existe, lo creamos primero en la tabla participantes
     if (!participante) {
-      [participante] = await db.insert(participantes).values({
+      // Si NO existe, lo creamos con los datos del formulario
+      const [nuevoParticipante] = await db.insert(participantes).values({
         dni: data.dni,
         nombre: data.nombre,
         apellido: data.apellido,
@@ -194,11 +210,10 @@ export async function registrarParticipante(data: {
         provincia: data.provincia || null,
         distrito: data.distrito || null,
       }).returning();
-    }
-
-    // En tu lib/actions.ts dentro de registrarParticipante:
-    if (participante) {
-      // Actualizamos sus datos por si cambió de correo, celular o dirección
+      
+      participante = nuevoParticipante;
+    } else {
+      // 🔄 Si SÍ existe, actualizamos sus datos por si cambió de correo o dirección
       await db
         .update(participantes)
         .set({
@@ -206,18 +221,18 @@ export async function registrarParticipante(data: {
           departamento: data.departamento || participante.departamento,
           provincia: data.provincia || participante.provincia,
           distrito: data.distrito || participante.distrito,
-          // area, telefono, etc.
+          area: data.area || participante.area,
         })
         .where(eq(participantes.id, participante.id));
     }
 
-    // 3. Verificar si YA está inscrito específicamente en ESTA charla para evitar duplicar la pk compuesta
+    // 3. Verificar si YA está inscrito específicamente en ESTA charla
     const [yaInscrito] = await db
       .select()
       .from(inscripciones)
       .where(
         and(
-          eq(inscripciones.charlaId, data.charlaId),
+          eq(inscripciones.charlaId, charlaReal.id), // Usamos el ID seguro que encontramos arriba
           eq(inscripciones.participanteId, participante.id)
         )
       )
@@ -229,7 +244,7 @@ export async function registrarParticipante(data: {
 
     // 4. Insertar la inscripción correspondiente en la tabla relacional
     await db.insert(inscripciones).values({
-      charlaId: data.charlaId,
+      charlaId: charlaReal.id, // Garantizado que no será null
       participanteId: participante.id,
     });
 
@@ -243,18 +258,10 @@ export async function registrarParticipante(data: {
 
 export async function obtenerParticipantes(charlaId?: string) {
   try {
-    // 1. Si no hay filtro o se seleccionaron "todos", listamos normal
-    if (!charlaId || charlaId === "todos") {
-      return await db
-        .select()
-        .from(participantes)
-        .orderBy(desc(participantes.createdAt));
-    }
-
-    // 2. 🚀 Si hay una charla específica, hacemos un JOIN con inscripciones
-    const resultadoJoin = await db
+    // 1. Iniciamos la query desde la tabla relacional 'inscripciones'
+    const query = db
       .select({
-        id: participantes.id,
+        id: participantes.id, // ID del participante
         dni: participantes.dni,
         nombre: participantes.nombre,
         apellido: participantes.apellido,
@@ -263,20 +270,28 @@ export async function obtenerParticipantes(charlaId?: string) {
         departamento: participantes.departamento,
         provincia: participantes.provincia,
         distrito: participantes.distrito,
-        createdAt: inscripciones.fechaInscripcion, // Usamos la fecha en que se inscribió a esa charla
+        // 🚀 NUEVOS CAMPOS DESDE EL JOIN
+        fechaInscripcion: inscripciones.fechaInscripcion,
+        charlaId: inscripciones.charlaId,
+        charlaSlug: charlas.slug, // El slug que necesitas para la columna
+        charlaNombre: charlas.nombreEvento // Por si quieres pintar el nombre largo
       })
-      .from(participantes)
-      .innerJoin(
-        inscripciones, 
-        eq(participantes.id, inscripciones.participanteId)
-      )
-      .where(eq(inscripciones.charlaId, Number(charlaId))) // Convertimos el string de la URL a número
-      .orderBy(desc(inscripciones.fechaInscripcion));
+      .from(inscripciones)
+      // 2. Unimos con participantes
+      .innerJoin(participantes, eq(inscripciones.participanteId, participantes.id))
+      // 3. Unimos con charlas para sacar el slug
+      .innerJoin(charlas, eq(inscripciones.charlaId, charlas.id));
 
-    return resultadoJoin;
+    // 4. Si el administrador seleccionó una charla específica en el filtro
+    if (charlaId && charlaId !== "todos") {
+      query.where(eq(inscripciones.charlaId, Number(charlaId)));
+    }
+
+    // Ordenamos por la inscripción más reciente a la capacitación
+    return await query.orderBy(desc(inscripciones.fechaInscripcion));
 
   } catch (error) {
-    console.error("Error al obtener participantes de la BD:", error);
+    console.error("Error al obtener participaciones de la BD:", error);
     return [];
   }
 }
