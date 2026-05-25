@@ -15,6 +15,7 @@ interface UbigeoItem {
 
 interface EventoPageProps {
   params: Promise<{ slug: string }>;
+  charlaId: number;
 }
 
 interface Evento {
@@ -32,7 +33,7 @@ interface Evento {
 // Para este ejemplo, asumiremos que recibes los datos necesarios o usas fetch. 
 // Aquí nos enfocamos en la lógica del formulario interactivo:
 
-export default function EventoPublicPage({ params }: EventoPageProps) {
+export default function EventoPublicPage({ params, charlaId }: EventoPageProps) {
 
   const { slug } = use(params); // Desempaquetamos el slug en cliente
   const router = useRouter();
@@ -128,7 +129,8 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
       area:"",
       departamento: nombreDep,
       provincia: nombreProv,
-      distrito: nombreDist
+      distrito: nombreDist,
+      charlaId: charlaId
     });
 
     setGuardando(false);
@@ -346,7 +348,7 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
                         {/* DEPARTAMENTO */}
                         <div>
                           <label className="block text-[11px] font-bold uppercase text-gray-600 mb-1">
-                            Departamento
+                            Departamento <span className="text-red-500">*</span>
                           </label>
                           <select
                             name="departamento"
@@ -364,7 +366,7 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
                         {/* PROVINCIA */}
                         <div>
                           <label className="block text-[11px] font-bold uppercase text-gray-600 mb-1">
-                            Provincia
+                            Provincia <span className="text-red-500">*</span>
                           </label>
                           <select
                             name="provincia"
@@ -383,7 +385,7 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
                         {/* DISTRITO */}
                         <div>
                           <label className="block text-[11px] font-bold uppercase text-gray-600 mb-1">
-                            Distrito
+                            Distrito <span className="text-red-500">*</span>
                           </label>
                           <select
                             name="distrito"
@@ -411,7 +413,7 @@ export default function EventoPublicPage({ params }: EventoPageProps) {
                     {/* BOTÓN DE CONFIRMACIÓN */}
                     <button
                       type="submit"
-                      disabled={guardando || !nombre || !apellido}
+                      disabled={guardando || !nombre || !apellido || !seleccion.departamento || !seleccion.provincia || !seleccion.distrito }
                       className={`${eventStyle.eventBtn} h-12 px-12 text-white transition mt-8 flex items-center justify-center gap-2 disabled:bg-gray-400`}
                     >
                       {guardando ? (

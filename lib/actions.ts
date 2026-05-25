@@ -1,11 +1,11 @@
 'use server';
 
 import { db } from "@/lib/db";
-import { charlas, ubigeoPeruDepartments, ubigeoPeruProvinces, ubigeoPeruDistricts, participantes } from "@/lib/schema";
+import { charlas, ubigeoPeruDepartments, ubigeoPeruProvinces, ubigeoPeruDistricts, participantes, inscripciones } from "@/lib/schema";
 import { redirect } from "next/navigation";
 import { writeFile, mkdir } from "node:fs/promises";
 import { join } from "path";
-import { eq, and, isNull } from 'drizzle-orm';
+import { eq, desc, and, isNull } from 'drizzle-orm';
 
 export async function crearCharla(prevState: string | undefined, formData: FormData) {
   let subidaExitosa = false;
@@ -161,6 +161,7 @@ export async function registrarParticipante(data: {
   departamento?: string;
   provincia?: string;
   distrito?: string;
+  charlaId: number;
 }) {
   // 1. Validaciones básicas de seguridad del lado del servidor
   if (!data.dni || data.dni.length !== 8) {
@@ -169,35 +170,125 @@ export async function registrarParticipante(data: {
   if (!data.nombre || !data.apellido) {
     return { success: false, error: "El nombre y apellido son obligatorios." };
   }
+  if (!data.departamento || !data.provincia || !data.distrito) {
+    return { success: false, error: "Debes seleccionar tu Departamento, Provincia y Distrito obligatoriamente." };
+  }
 
   try {
-    // 2. Verificar si el participante ya se registró antes en el sistema global
-    const [existe] = await db
+    // 1. Buscar si el participante ya existe en la base de datos general por su DNI
+    let [participante] = await db
       .select()
       .from(participantes)
       .where(eq(participantes.dni, data.dni))
       .limit(1);
 
-    if (existe) {
-      return { success: false, error: "Este DNI ya se encuentra registrado en el evento." };
+    // 2. Si no existe, lo creamos primero en la tabla participantes
+    if (!participante) {
+      [participante] = await db.insert(participantes).values({
+        dni: data.dni,
+        nombre: data.nombre,
+        apellido: data.apellido,
+        correo: data.correo || null,
+        area: data.area || null,
+        departamento: data.departamento || null,
+        provincia: data.provincia || null,
+        distrito: data.distrito || null,
+      }).returning();
     }
 
-    // 3. Insertar el registro en la tabla de Supabase usando Drizzle
-    await db.insert(participantes).values({
-      dni: data.dni,
-      nombre: data.nombre,
-      apellido: data.apellido,
-      correo: data.correo || null,
-      area: data.area || null,
-      departamento: data.departamento || null,
-      provincia: data.provincia || null,
-      distrito: data.distrito || null,
+    // En tu lib/actions.ts dentro de registrarParticipante:
+    if (participante) {
+      // Actualizamos sus datos por si cambió de correo, celular o dirección
+      await db
+        .update(participantes)
+        .set({
+          correo: data.correo || participante.correo,
+          departamento: data.departamento || participante.departamento,
+          provincia: data.provincia || participante.provincia,
+          distrito: data.distrito || participante.distrito,
+          // area, telefono, etc.
+        })
+        .where(eq(participantes.id, participante.id));
+    }
+
+    // 3. Verificar si YA está inscrito específicamente en ESTA charla para evitar duplicar la pk compuesta
+    const [yaInscrito] = await db
+      .select()
+      .from(inscripciones)
+      .where(
+        and(
+          eq(inscripciones.charlaId, data.charlaId),
+          eq(inscripciones.participanteId, participante.id)
+        )
+      )
+      .limit(1);
+
+    if (yaInscrito) {
+      return { success: false, error: "Ya te encuentras registrado en esta capacitación." };
+    }
+
+    // 4. Insertar la inscripción correspondiente en la tabla relacional
+    await db.insert(inscripciones).values({
+      charlaId: data.charlaId,
+      participanteId: participante.id,
     });
 
     return { success: true };
 
   } catch (error) {
-    console.error("Error al insertar participante:", error);
-    return { success: false, error: "Hubo un error interno al guardar tu registro. Inténtalo de nuevo." };
+    console.error("Error en registro relacional:", error);
+    return { success: false, error: "Error interno al procesar la inscripción." };
+  }
+}
+
+export async function obtenerParticipantes(charlaId?: string) {
+  try {
+    // 1. Si no hay filtro o se seleccionaron "todos", listamos normal
+    if (!charlaId || charlaId === "todos") {
+      return await db
+        .select()
+        .from(participantes)
+        .orderBy(desc(participantes.createdAt));
+    }
+
+    // 2. 🚀 Si hay una charla específica, hacemos un JOIN con inscripciones
+    const resultadoJoin = await db
+      .select({
+        id: participantes.id,
+        dni: participantes.dni,
+        nombre: participantes.nombre,
+        apellido: participantes.apellido,
+        correo: participantes.correo,
+        area: participantes.area,
+        departamento: participantes.departamento,
+        provincia: participantes.provincia,
+        distrito: participantes.distrito,
+        createdAt: inscripciones.fechaInscripcion, // Usamos la fecha en que se inscribió a esa charla
+      })
+      .from(participantes)
+      .innerJoin(
+        inscripciones, 
+        eq(participantes.id, inscripciones.participanteId)
+      )
+      .where(eq(inscripciones.charlaId, Number(charlaId))) // Convertimos el string de la URL a número
+      .orderBy(desc(inscripciones.fechaInscripcion));
+
+    return resultadoJoin;
+
+  } catch (error) {
+    console.error("Error al obtener participantes de la BD:", error);
+    return [];
+  }
+}
+
+// La función obtenerCharlasSelect se queda exactamente igual que antes 👍
+export async function obtenerCharlasSelect() {
+  try {
+    return await db
+      .select({ id: charlas.id, nombre: charlas.nombreEvento })
+      .from(charlas);
+  } catch (error) {
+    console.error("Error al obtener charlas:", error);
+    return [];
   }
 }
