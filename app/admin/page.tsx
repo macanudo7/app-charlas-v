@@ -56,12 +56,13 @@ export default async function AdminDashboard() {
                 <th className="py-3 px-6 text-center">Charla</th>
                 <th className="py-3 px-6 text-center w-32">Estado</th>
                 <th className="py-3 px-6 text-center w-36">Acciones</th>
+                <th className="py-3 px-6 text-center w-36">Certificados</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 text-sm">
               {listaCharlas.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="text-center py-8 text-gray-500">
+                  <td colSpan={5} className="text-center py-8 text-gray-500">
                     No hay charlas registradas todavía. ¡Usa el Seed o agrega una nueva!
                   </td>
                 </tr>
@@ -129,6 +130,31 @@ export default async function AdminDashboard() {
                             </svg>
                           </button>
                         </div>
+                      </td>
+                      <td className="py-4 px-6 flex justify-center items-center">
+                        {esPasada && (
+                          <a
+                            href={`/api/certificados/${charla.id}`}
+                            target="_blank"
+                            className="hover:text-green-600 transition-colors"
+                            title="Descargar certificados"
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M12 16V4m0 12l-4-4m4 4l4-4M4 20h16"
+                              />
+                            </svg>
+                          </a>
+                        )}
+
                       </td>
                     </tr>
                   );

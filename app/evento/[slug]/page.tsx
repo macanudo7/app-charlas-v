@@ -180,7 +180,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
         <div className="relative mx-auto flex w-full flex-col space-y-1.5 p-4">
           <div className="flex w-full items-center justify-center">
             <Image
-              src={evento?.banner || "/img/bg-forms-yura.png"}
+              src={evento?.banner || "/img/banner-orgullo-2.webp"}
               alt={evento?.nombreEvento || "Banner del evento Yura"}
               width={1000}
               height={1000}
@@ -210,7 +210,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
 
             {/* Controlamos si se muestra el mensaje de éxito o los campos del formulario */}
             {mensajeExito ? (
-              <div className="{`${eventStyle.eventFormSucess} border p-8 rounded text-center space-y-4 max-w-2xl mx-auto my-10 shadow-md`}">
+              <div className={`${eventStyle.eventFormSucess} border p-8 rounded text-center space-y-4 max-w-2xl mx-auto my-10 shadow-md`}>
                 <span className="text-4xl">✅</span>
                 <p className="text-base font-bold uppercase tracking-wide mt-3">{mensajeExito}</p>
                 <button
