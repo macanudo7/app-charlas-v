@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { charlas, ubigeoPeruDepartments, ubigeoPeruProvinces, ubigeoPeruDistricts, participantes, inscripciones } from "@/lib/schema";
-import { eq, desc, and, isNull } from 'drizzle-orm';
+import { eq, desc, and, isNull, ilike, sql } from 'drizzle-orm';
 import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 
@@ -381,7 +381,9 @@ export async function registrarParticipante(data: {
   }
 }
 
-export async function obtenerParticipantes(charlaId?: string) {
+export async function obtenerParticipantes(charlaId?: string,
+  dni?: string,
+  fecha?: string) {
   try {
     // 1. Iniciamos la query desde la tabla relacional 'inscripciones'
     const query = db
@@ -411,6 +413,30 @@ export async function obtenerParticipantes(charlaId?: string) {
     // 4. Si el administrador seleccionó una charla específica en el filtro
     if (charlaId && charlaId !== "todos") {
       query.where(eq(inscripciones.charlaId, Number(charlaId)));
+    }
+
+    const condiciones = [];
+
+    // Filtro por capacitación
+    if (charlaId && charlaId !== "todos" && charlaId !== "-- Todas las charlas --") {
+      condiciones.push(eq(inscripciones.charlaId, Number(charlaId)));
+    }
+
+    // Filtro por DNI (Búsqueda parcial: si escribe '45' busca coincidencias)
+    if (dni && dni.trim() !== "") {
+      condiciones.push(ilike(participantes.dni, `%${dni.trim()}%`));
+    }
+
+    // Filtro por Fecha (Compara solo Año-Mes-Día ignorando las horas/minutos de la BD)
+    if (fecha && fecha.trim() !== "") {
+      condiciones.push(
+        sql`DATE(${inscripciones.fechaInscripcion}) = ${fecha}`
+      );
+    }
+
+    // Si el usuario aplicó al menos un filtro, los inyectamos todos juntos usando 'and'
+    if (condiciones.length > 0) {
+      query.where(and(...condiciones));
     }
 
     // Ordenamos por la inscripción más reciente a la capacitación

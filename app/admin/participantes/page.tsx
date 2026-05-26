@@ -4,7 +4,11 @@ import { obtenerParticipantes, obtenerCharlasSelect } from "@/lib/actions";
 import FiltroCharla from "./filtro-charla";
 
 interface PageProps {
-  searchParams: Promise<{ charlaId?: string }>;
+  searchParams: Promise<{ 
+    charlaId?: string; 
+    dni?: string; 
+    fecha?: string; 
+  }>;
 }
 
 export default async function ParticipantesPage({ searchParams }: PageProps) {
@@ -15,11 +19,11 @@ export default async function ParticipantesPage({ searchParams }: PageProps) {
   }
 
   // Desempaquetamos los parámetros de búsqueda de la URL
-  const { charlaId } = await searchParams;
+  const { charlaId, dni, fecha } = await searchParams;
 
-  // 2. Ejecutamos las peticiones en paralelo directo en Supabase
+  // 2. Ejecutamos las peticiones enviándole los 3 filtros al backend
   const [listaParticipantes, listaCharlas] = await Promise.all([
-    obtenerParticipantes(charlaId),
+    obtenerParticipantes(charlaId, dni, fecha),
     obtenerCharlasSelect()
   ]);
 
