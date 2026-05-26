@@ -279,6 +279,7 @@ export async function registrarParticipante(data: {
   nombre: string;
   apellido: string;
   correo?: string;
+  telefono?: string;
   area?: string;
   departamento?: string;
   provincia?: string;
@@ -327,6 +328,7 @@ export async function registrarParticipante(data: {
         nombre: data.nombre,
         apellido: data.apellido,
         correo: data.correo || null,
+        telefono: data.telefono || null,
         area: data.area || null,
         departamento: data.departamento || null,
         provincia: data.provincia || null,
@@ -340,6 +342,7 @@ export async function registrarParticipante(data: {
         .update(participantes)
         .set({
           correo: data.correo || participante.correo,
+          telefono: data.telefono || participante.telefono,
           departamento: data.departamento || participante.departamento,
           provincia: data.provincia || participante.provincia,
           distrito: data.distrito || participante.distrito,
@@ -388,6 +391,7 @@ export async function obtenerParticipantes(charlaId?: string) {
         nombre: participantes.nombre,
         apellido: participantes.apellido,
         correo: participantes.correo,
+        telefono: participantes.telefono,
         area: participantes.area,
         departamento: participantes.departamento,
         provincia: participantes.provincia,

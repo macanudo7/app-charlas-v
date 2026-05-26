@@ -31,6 +31,7 @@ export const participantes = pgTable("participantes", {
   nombre: text("nombre").notNull(),
   apellido: text("apellido").notNull(),
   correo: text("correo"),
+  telefono: varchar("telefono", { length: 15 }), // 🚀 ¡AGREGA ESTA LÍNEA AQUÍ!
   area: varchar("area", { length: 100 }),
   // Nuevos campos de ubicación
   departamento: varchar("departamento", { length: 100 }),

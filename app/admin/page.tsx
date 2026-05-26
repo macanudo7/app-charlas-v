@@ -30,7 +30,7 @@ export default async function AdminDashboard() {
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
           {/* Selector de Buscar Charla */}
           <div className="relative w-full sm:w-64">
-            <select className="w-full bg-white border border-gray-300 rounded px-4 py-2 pr-8 shadow-sm appearance-none focus:outline-none focus:border-[#1b1c54] text-sm">
+            {/* <select className="w-full bg-white border border-gray-300 rounded px-4 py-2 pr-8 shadow-sm appearance-none focus:outline-none focus:border-[#1b1c54] text-sm">
               <option>Buscar charla</option>
               {listaCharlas.map((c) => (
                 <option key={c.id} value={c.id}>{c.nombreEvento}</option>
@@ -38,7 +38,7 @@ export default async function AdminDashboard() {
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
               <svg className="fill-current h-4 w-4" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-            </div>
+            </div> */}
           </div>
 
           {/* Botón Agregar Charla */}
@@ -117,18 +117,18 @@ export default async function AdminDashboard() {
                           </Link>
                                                 
                           {/* Editar (Etiqueta/Lápiz) */}
-                          <button className="hover:text-amber-500 transition-colors" title="Editar charla">
+                          {/* <button className="hover:text-amber-500 transition-colors" title="Editar charla">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
-                          </button>
+                          </button> */}
                           
                           {/* Eliminar (Tacho de Basura) */}
-                          <button className="hover:text-red-500 transition-colors" title="Eliminar charla">
+                          {/* <button className="hover:text-red-500 transition-colors" title="Eliminar charla">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                          </button>
+                          </button> */}
                         </div>
                       </td>
                       <td className="py-4 px-6 flex justify-center items-center">

@@ -126,6 +126,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
       nombre,
       apellido,
       correo,
+      telefono,
       area:"",
       departamento: nombreDep,
       provincia: nombreProv,

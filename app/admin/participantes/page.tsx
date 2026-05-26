@@ -59,7 +59,8 @@ export default async function ParticipantesPage({ searchParams }: PageProps) {
                     <th className="py-3 px-4">DNI</th>
                     <th className="py-3 px-4">Participante</th>
                     <th className="py-3 px-4">Capacitación (Slug)</th> {/* 👈 Nueva columna */}
-                    <th className="py-3 px-4">Contacto</th>
+                    <th className="py-3 px-4">EMAIL</th>
+                    <th className="py-3 px-4">TELEFONO</th>
                     <th className="py-3 px-4">Ubicación (Ubigeo)</th>
                     <th className="py-3 px-4 text-center">F. Registro</th>
                   </tr>
@@ -89,6 +90,11 @@ export default async function ParticipantesPage({ searchParams }: PageProps) {
                       {/* Correo */}
                       <td className="py-3.5 px-4 font-mono text-xs text-gray-500">
                         {item.correo || "Sin correo"}
+                      </td>
+
+                      {/* Telefono */}
+                      <td className="py-3.5 px-4 font-mono text-xs text-gray-500">
+                        {item.telefono || "Sin telefono"}
                       </td>
 
                       {/* Ubicación */}
