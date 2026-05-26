@@ -1,12 +1,26 @@
 'use client';
 
 import { crearCharla } from "@/lib/actions";
-import { useActionState, useState } from "react";
+import { useActionState, useState, useEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
 
 export default function CreateCharlaForm() {
-  const [errorMessage, dispatch] = useActionState(crearCharla, undefined);
+  // 1. 🔄 Cambiamos 'errorMessage' por 'state' porque ahora recibe { success, error, mensaje }
+  const [state, dispatch] = useActionState(crearCharla, undefined);
   const [logoCount, setLogoCount] = useState(0);
+  const formRef = useRef<HTMLFormElement>(null); // Referencia para limpiar el formulario al terminar
+
+  // ✨ Si todo sale bien (state.success es true), limpiamos los campos de forma segura
+useEffect(() => {
+  if (state?.success) {
+    formRef.current?.reset();
+    
+    // 🛡️ Solo ejecutamos el setState si el contador es mayor a 0, evitando renders en cascada
+    if (logoCount > 0) {
+      setLogoCount(0);
+    }
+  }
+}, [state, logoCount]); // 👈 Añadimos logoCount a las dependencias exigidas por React
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -22,10 +36,20 @@ export default function CreateCharlaForm() {
   };
 
   return (
-    <form action={dispatch} encType="multipart/form-data" className="space-y-6 p-4">
-      {errorMessage && (
-        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded text-sm">
-          {errorMessage}
+    // Añadimos el ref aquí para poder resetearlo en el useEffect
+    <form ref={formRef} action={dispatch} encType="multipart/form-data" className="space-y-6 p-4">
+      
+      {/* 🛑 Pintamos el error si existe accediendo a state.error */}
+      {state?.error && (
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded text-sm font-medium">
+          {state.error}
+        </div>
+      )}
+
+      {/* 🎉 Pintamos el mensaje de éxito si todo salió bien desde state.mensaje */}
+      {state?.mensaje && (
+        <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded text-sm font-medium">
+          {state.mensaje}
         </div>
       )}
 
@@ -33,11 +57,11 @@ export default function CreateCharlaForm() {
         {/* Nombre del Evento */}
         <div>
           <label className="block text-xs font-bold uppercase mb-2">
-            Nombre del Evento <span>*</span>
+            Nombre del Evento <span className="text-red-500">*</span>
           </label>
           <input
             type="text" name="nombreEvento" required
-            className="w-full border border-gray-300 text-sm focus:outline-none focus:border-[#1b1c54]"
+            className="w-full border border-gray-300 text-sm p-2 focus:outline-none focus:border-[#1b1c54]"
             placeholder="Ej: Capacitación Planta Yura 2026"
           />
         </div>
@@ -45,7 +69,7 @@ export default function CreateCharlaForm() {
         {/* URL / Slug */}
         <div>
           <label className="block text-xs font-bold uppercase mb-2">
-            URL del Evento (Slug) <span>*</span>
+            URL del Evento (Slug) <span className="text-red-500">*</span>
           </label>
           <div className="flex rounded-md shadow-sm">
             <span className="inline-flex items-center px-3 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
@@ -53,7 +77,7 @@ export default function CreateCharlaForm() {
             </span>
             <input
               type="text" name="slug" required
-              className="w-full border border-gray-300 text-sm focus:outline-none focus:border-[#1b1c54]"
+              className="w-full border border-gray-300 text-sm p-2 focus:outline-none focus:border-[#1b1c54]"
               placeholder="seguridad-planta-yura"
             />
           </div>
@@ -62,22 +86,22 @@ export default function CreateCharlaForm() {
         {/* Fecha del Evento */}
         <div>
           <label className="block text-xs font-bold uppercase mb-2">
-            Fecha y Hora del Evento <span>*</span>
+            Fecha y Hora del Evento <span className="text-red-500">*</span>
           </label>
           <input
             type="datetime-local" name="fecha" required
-            className="w-full border border-gray-300 text-sm focus:outline-none focus:border-[#1b1c54]"
+            className="w-full border border-gray-300 text-sm p-2 focus:outline-none focus:border-[#1b1c54]"
           />
         </div>
 
         {/* Título del Formulario */}
         <div>
           <label className="block text-xs font-bold uppercase mb-2">
-            Título sobre el Formulario <span>*</span>
+            Título sobre el Formulario <span className="text-red-500">*</span>
           </label>
           <input
             type="text" name="tituloFormulario" required
-            className="w-full border border-gray-300 text-sm focus:outline-none focus:border-[#1b1c54]"
+            className="w-full border border-gray-300 text-sm p-2 focus:outline-none focus:border-[#1b1c54]"
             placeholder="Ej: Inscríbete ingresando tus datos"
           />
         </div>
@@ -85,10 +109,10 @@ export default function CreateCharlaForm() {
         {/* Banner del Evento (Imagen Principal) */}
         <div>
           <label className="block text-xs font-bold uppercase mb-2">
-            Banner del Evento <span>*</span> <span>(Imagen sin fondo en .png, en proporción 1:1 idealmente)</span>
+            Banner del Evento <span className="text-red-500">*</span> <span className="text-gray-400 font-normal text-[11px]">(Imagen sin fondo .png, proporción 1:1)</span>
           </label>
           <input
-            type="file" name="banner" accept="image/*"
+            type="file" name="banner" accept="image/*" required // 👈 Obligatorio ya que lo pides en el backend
             className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
           />
         </div>
@@ -96,7 +120,7 @@ export default function CreateCharlaForm() {
         {/* Imagen de Fondo del Banner (CAMBIADO A FILE) */}
         <div>
           <label className="block text-xs font-bold uppercase mb-2">
-            Imagen de Fondo para el Banner <span></span> <span>(Opcional, por defecto usará un fondo de cemento)</span>
+            Imagen de Fondo para el Banner <span className="text-gray-400 font-normal text-[11px]">(Opcional, por defecto usará fondo cemento)</span>
           </label>
           <input
             type="file" name="fondoBanner" accept="image/*"
@@ -108,7 +132,7 @@ export default function CreateCharlaForm() {
       {/* Logos de Organizadores (Array de imágenes) */}
       <div className="pt-2">
         <label className="block text-xs font-bold uppercase mb-2">
-          Logos de Organizadores (Máx 9) <span></span> <span>(Opcional, incluye por defecto el logo de Yura, seleccionar las imágenes en .png de forma agrupada)</span>
+          Logos de Organizadores (Grupo de Imágenes - Máximo 9)
         </label>
         <input
           type="file" name="logos" multiple accept="image/*" onChange={handleLogoChange}
@@ -121,7 +145,7 @@ export default function CreateCharlaForm() {
 
       {/* Botones */}
       <div className="flex justify-end space-x-4 border-t pt-6">
-        <a href="/admin" className="px-5 py-2 text-sm font-medium border border-gray-300 hover:bg-gray-50 transition-colors">
+        <a href="/admin" className="px-5 py-2 text-sm font-medium border border-gray-300 hover:bg-gray-50 transition-colors flex items-center">
           Cancelar
         </a>
         <SubmitButton />

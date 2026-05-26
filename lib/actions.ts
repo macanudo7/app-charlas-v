@@ -2,81 +2,203 @@
 
 import { db } from "@/lib/db";
 import { charlas, ubigeoPeruDepartments, ubigeoPeruProvinces, ubigeoPeruDistricts, participantes, inscripciones } from "@/lib/schema";
-import { redirect } from "next/navigation";
-import { writeFile, mkdir } from "node:fs/promises";
-import { join } from "path";
 import { eq, desc, and, isNull } from 'drizzle-orm';
+import { createClient } from '@supabase/supabase-js';
+import { revalidatePath } from 'next/cache';
 
-export async function crearCharla(prevState: string | undefined, formData: FormData) {
-  let subidaExitosa = false;
+// 1. 🔒 QUITAMOS EL 'export'. Ahora es una función interna de ayuda.
+function getSupabaseClient() {
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  try {
-    const nombreEvento = formData.get("nombreEvento") as string;
-    const slug = formData.get("slug") as string;
-    const fecha = formData.get("fecha") as string;
-    const tituloFormulario = formData.get("tituloFormulario") as string;
-
-    if (!nombreEvento || !slug || !fecha || !tituloFormulario) {
-      return "Por favor, completa todos los campos obligatorios.";
-    }
-
-    const uploadDir = join(process.cwd(), "public", "uploads");
-    await mkdir(uploadDir, { recursive: true });
-
-    // 1. PROCESAR IMAGEN: BANNER PRINCIPAL
-    const bannerFile = formData.get("banner") as File;
-    let bannerUrl = "";
-    if (bannerFile && bannerFile.size > 0) {
-      const bannerFilename = `${Date.now()}-banner-${bannerFile.name}`;
-      const bannerBuffer = Buffer.from(await bannerFile.arrayBuffer());
-      await writeFile(join(uploadDir, bannerFilename), bannerBuffer);
-      bannerUrl = `/uploads/${bannerFilename}`;
-    }
-
-    // 2. PROCESAR IMAGEN: FONDO DEL BANNER (NUEVO)
-    const fondoBannerFile = formData.get("fondoBanner") as File;
-    let fondoBannerUrl = "";
-    if (fondoBannerFile && fondoBannerFile.size > 0) {
-      const fondoFilename = `${Date.now()}-fondo-${fondoBannerFile.name}`;
-      const fondoBuffer = Buffer.from(await fondoBannerFile.arrayBuffer());
-      await writeFile(join(uploadDir, fondoFilename), fondoBuffer);
-      fondoBannerUrl = `/uploads/${fondoFilename}`;
-    }
-
-    // 3. PROCESAR ARRAY DE IMÁGENES: LOGOS ORGANIZADORES
-    const logoFiles = formData.getAll("logos") as File[];
-    const logosUrls: string[] = [];
-    const archivosValidos = logoFiles.filter(f => f.size > 0).slice(0, 9);
-
-    for (const logoFile of archivosValidos) {
-      const logoFilename = `${Date.now()}-logo-${logoFile.name}`;
-      const logoBuffer = Buffer.from(await logoFile.arrayBuffer());
-      await writeFile(join(uploadDir, logoFilename), logoBuffer);
-      logosUrls.push(`/uploads/${logoFilename}`);
-    }
-
-    // GUARDAR EN POSTGRESQL
-    await db.insert(charlas).values({
-      nombreEvento,
-      slug: slug.toLowerCase().replace(/[^a-z0-9-_]/g, ""),
-      fecha: new Date(fecha),
-      tituloFormulario,
-      banner: bannerUrl,
-      fondoBanner: fondoBannerUrl, // Guardamos la ruta del fondo
-      logos: logosUrls,            // Guardamos el array de rutas de imágenes
-    });
-
-    subidaExitosa = true;
-  } catch (error: any) {
-    console.error("Error creando charla:", error);
-    if (error.code === "23505") {
-      return "La URL (slug) ya está siendo utilizada en otro evento.";
-    }
-    return "Error interno al guardar la charla.";
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error(
+      "❌ ERROR CRÍTICO: Las variables de entorno de Supabase no están cargadas."
+    );
   }
 
-  if (subidaExitosa) {
-    redirect("/admin");
+  return createClient(supabaseUrl, supabaseAnonKey);
+}
+
+export interface ActionResponse {
+  success: boolean;
+  error?: string;
+  mensaje?: string;
+}
+
+// export async function crearCharla(prevState: string | undefined, formData: FormData) {
+//   let subidaExitosa = false;
+
+//   try {
+//     const nombreEvento = formData.get("nombreEvento") as string;
+//     const slug = formData.get("slug") as string;
+//     const fecha = formData.get("fecha") as string;
+//     const tituloFormulario = formData.get("tituloFormulario") as string;
+
+//     if (!nombreEvento || !slug || !fecha || !tituloFormulario) {
+//       return "Por favor, completa todos los campos obligatorios.";
+//     }
+
+//     const uploadDir = join(process.cwd(), "public", "uploads");
+//     await mkdir(uploadDir, { recursive: true });
+
+//     // 1. PROCESAR IMAGEN: BANNER PRINCIPAL
+//     const bannerFile = formData.get("banner") as File;
+//     let bannerUrl = "";
+//     if (bannerFile && bannerFile.size > 0) {
+//       const bannerFilename = `${Date.now()}-banner-${bannerFile.name}`;
+//       const bannerBuffer = Buffer.from(await bannerFile.arrayBuffer());
+//       await writeFile(join(uploadDir, bannerFilename), bannerBuffer);
+//       bannerUrl = `/uploads/${bannerFilename}`;
+//     }
+
+//     // 2. PROCESAR IMAGEN: FONDO DEL BANNER (NUEVO)
+//     const fondoBannerFile = formData.get("fondoBanner") as File;
+//     let fondoBannerUrl = "";
+//     if (fondoBannerFile && fondoBannerFile.size > 0) {
+//       const fondoFilename = `${Date.now()}-fondo-${fondoBannerFile.name}`;
+//       const fondoBuffer = Buffer.from(await fondoBannerFile.arrayBuffer());
+//       await writeFile(join(uploadDir, fondoFilename), fondoBuffer);
+//       fondoBannerUrl = `/uploads/${fondoFilename}`;
+//     }
+
+//     // 3. PROCESAR ARRAY DE IMÁGENES: LOGOS ORGANIZADORES
+//     const logoFiles = formData.getAll("logos") as File[];
+//     const logosUrls: string[] = [];
+//     const archivosValidos = logoFiles.filter(f => f.size > 0).slice(0, 9);
+
+//     for (const logoFile of archivosValidos) {
+//       const logoFilename = `${Date.now()}-logo-${logoFile.name}`;
+//       const logoBuffer = Buffer.from(await logoFile.arrayBuffer());
+//       await writeFile(join(uploadDir, logoFilename), logoBuffer);
+//       logosUrls.push(`/uploads/${logoFilename}`);
+//     }
+
+//     // GUARDAR EN POSTGRESQL
+//     await db.insert(charlas).values({
+//       nombreEvento,
+//       slug: slug.toLowerCase().replace(/[^a-z0-9-_]/g, ""),
+//       fecha: new Date(fecha),
+//       tituloFormulario,
+//       banner: bannerUrl,
+//       fondoBanner: fondoBannerUrl, // Guardamos la ruta del fondo
+//       logos: logosUrls,            // Guardamos el array de rutas de imágenes
+//     });
+
+//     subidaExitosa = true;
+//   } catch (error: any) {
+//     console.error("Error creando charla:", error);
+//     if (error.code === "23505") {
+//       return "La URL (slug) ya está siendo utilizada en otro evento.";
+//     }
+//     return "Error interno al guardar la charla.";
+//   }
+
+//   if (subidaExitosa) {
+//     redirect("/admin");
+//   }
+// }
+
+export async function crearCharla(
+  prevState: ActionResponse | undefined, // Cambiado a un objeto structurado para mejor manejo de errores en la interfaz
+  formData: FormData
+): Promise<ActionResponse> {
+  try {
+    // 1. Extraer los campos de texto del formulario
+    const nombreEvento = formData.get("nombreEvento") as string;
+    const slug = formData.get("slug") as string;
+    const fechaInput = formData.get("fecha") as string;
+    const tituloFormulario = formData.get("tituloFormulario") as string;
+
+    // Validaciones básicas del lado del servidor
+    if (!nombreEvento || !slug || !fechaInput || !tituloFormulario) {
+      return { success: false, error: "Todos los campos obligatorios deben estar llenos." };
+    }
+
+    const supabase = getSupabaseClient();
+
+    // 2. Procesar el archivo del Banner
+    const archivoBanner = formData.get("banner") as File | null;
+    let urlBanner: string | null = null;
+
+    if (archivoBanner && archivoBanner.size > 0 && archivoBanner.name !== "undefined") {
+      // Limpiamos el nombre del archivo quitando caracteres raros y le añadimos un timestamp único
+      const extension = archivoBanner.name.split('.').pop();
+      const nombreLimpio = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${extension}`;
+      const rutaArchivo = `banners/${nombreLimpio}`;
+
+      // Convertimos el archivo a Buffer para el entorno Node.js de Vercel
+      const bytes = await archivoBanner.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      const { error: uploadError } = await supabase.storage
+        .from('charlas')
+        .upload(rutaArchivo, buffer, {
+          contentType: archivoBanner.type,
+          upsert: true
+        });
+
+      if (uploadError) {
+        console.error("Error al subir banner:", uploadError);
+        return { success: false, error: "Error al subir la imagen del banner corporativo." };
+      }
+
+      // Recuperamos la URL pública (ya que tu bucket ahora es Public)
+      const { data } = supabase.storage.from('charlas').getPublicUrl(rutaArchivo);
+      urlBanner = data.publicUrl;
+    }
+
+    // 3. Procesar el archivo de Fondo del Banner (Fondo Opcional)
+    const archivoFondo = formData.get("fondoBanner") as File | null;
+    let urlFondo: string | null = null;
+
+    if (archivoFondo && archivoFondo.size > 0 && archivoFondo.name !== "undefined") {
+      const extension = archivoFondo.name.split('.').pop();
+      const nombreLimpio = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${extension}`;
+      const rutaArchivo = `fondos/${nombreLimpio}`;
+
+      const bytes = await archivoFondo.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      const { error: uploadError } = await supabase.storage
+        .from('charlas', )
+        .upload(rutaArchivo, buffer, {
+          contentType: archivoFondo.type,
+          upsert: true
+        });
+
+      if (!uploadError) {
+        const { data } = supabase.storage.from('charlas').getPublicUrl(rutaArchivo);
+        urlFondo = data.publicUrl;
+      }
+    }
+
+    // 4. Inserción limpia en PostgreSQL a través de Drizzle ORM
+    await db.insert(charlas).values({
+      nombreEvento,
+      slug: slug.trim().toLowerCase(), // Aseguramos formato url limpia
+      fecha: new Date(fechaInput),
+      tituloFormulario,
+      banner: urlBanner,       // Guardará null o la url de supabase: https://...
+      fondoBanner: urlFondo,   // Guardará null o la url de supabase: https://...
+      activo: true,
+      logos: [] // Inicializa el json vacío según tu esquema
+    });
+
+    // 5. Rompemos la caché de Next.js para que el listado de charlas se actualice al instante
+    revalidatePath("/charlas");
+
+    return { success: true, mensaje: "La capacitación se ha creado y publicado exitosamente." };
+
+  } catch (error: any) {
+    console.error("Error crítico en crearCharla:", error);
+    
+    // Controlar si intentan duplicar un slug único en la BD (Error común en producción)
+    if (error.code === '23505' || error.message?.includes('unique constraint')) {
+      return { success: false, error: "El slug ya está en uso. Elige un identificador de URL diferente." };
+    }
+
+    return { success: false, error: "Error interno del servidor al procesar la solicitud." };
   }
 }
 
@@ -305,5 +427,20 @@ export async function obtenerCharlasSelect() {
   } catch (error) {
     console.error("Error al obtener charlas:", error);
     return [];
+  }
+}
+
+export async function obtenerEventoPorSlug(slug: string) {
+  try {
+    const [evento] = await db
+      .select()
+      .from(charlas)
+      .where(eq(charlas.slug, slug))
+      .limit(1);
+      
+    return evento || null;
+  } catch (error) {
+    console.error("Error al buscar el evento:", error);
+    return null;
   }
 }

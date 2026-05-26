@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { consultarDni } from "@/lib/actions";
 import Image from "next/image";
 import eventStyle from "@/app/evento/[slug]/page.module.css";
-import { obtenerDepartamentos, obtenerProvinciasPorDepartamento, obtenerDistritosPorProvincia, registrarParticipante} from "@/lib/actions";
+import { obtenerDepartamentos, obtenerProvinciasPorDepartamento, obtenerDistritosPorProvincia, registrarParticipante, obtenerEventoPorSlug} from "@/lib/actions";
 
 // Estructura interna para los combos
 interface UbigeoItem {
@@ -43,13 +43,11 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
   const [evento, setEvento] = useState<Evento | null>(null)
 
   useEffect(() => {
-
-    const cargarEvento = async () => {
-      const res = await fetch(`/api/evento/${slug}`)
-      const data = await res.json()
-      setEvento(data)
-    }
-    cargarEvento()
+      const cargarEvento = async () => {
+      const data = await obtenerEventoPorSlug(slug); // 🚀 Llama directo a la base de datos
+      setEvento(data);
+    };
+    cargarEvento();
   }, [slug])
 
   // Estados para Ubigeo Dinámico
@@ -169,6 +167,16 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
       setApellido("");
     }
   };
+
+  if (!evento) {
+    return (
+      <div className="min-h-screen bg-[#eaeaea] flex items-center justify-center font-semibold text-[#1b1c54]">
+        Cargando capacitación de Yura...
+      </div>
+    );
+  }
+
+
 
   return (
     <div className="min-h-screen bg-[#eaeaea] text-gray-800 flex flex-col justify-between">

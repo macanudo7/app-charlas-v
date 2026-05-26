@@ -10,6 +10,7 @@
     "db:seed": "tsx seed.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.106.2",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "jszip": "^3.10.1",
