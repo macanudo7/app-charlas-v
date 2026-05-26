@@ -43,12 +43,14 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
   const [evento, setEvento] = useState<Evento | null>(null)
 
   useEffect(() => {
-      const cargarEvento = async () => {
-      const data = await obtenerEventoPorSlug(slug); // 🚀 Llama directo a la base de datos
-      setEvento(data);
+    const cargarEvento = async () => {
+      const data = await obtenerEventoPorSlug(slug);
+      
+      // 🚀 Le aseguramos a TypeScript que los datos coinciden con nuestra interfaz Cliente
+      setEvento(data as Evento | null);
     };
     cargarEvento();
-  }, [slug])
+  }, [slug]);
 
   // Estados para Ubigeo Dinámico
   const [listas, setListas] = useState<{
