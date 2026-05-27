@@ -89,7 +89,7 @@ export default function CreateCharlaForm() {
         {/* Nombre del Evento */}
         <div>
           <label className="block text-xs font-bold uppercase mb-2">
-            Nombre del Evento <span className="text-red-500">*</span>
+            Nombre del Evento <span>*</span>
           </label>
           <input
             type="text" name="nombreEvento" required
@@ -101,7 +101,7 @@ export default function CreateCharlaForm() {
         {/* URL / Slug */}
         <div>
           <label className="block text-xs font-bold uppercase mb-2">
-            URL del Evento (Slug) <span className="text-red-500">*</span>
+            URL del Evento (Slug) <span>*</span>
           </label>
           <div className="flex rounded-md shadow-sm">
             <span className="inline-flex items-center px-3 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
@@ -118,7 +118,7 @@ export default function CreateCharlaForm() {
         {/* Fecha del Evento */}
         <div>
           <label className="block text-xs font-bold uppercase mb-2">
-            Fecha y Hora del Evento <span className="text-red-500">*</span>
+            Fecha y Hora del Evento <span>*</span>
           </label>
           <input
             type="datetime-local" name="fecha" required
@@ -129,7 +129,7 @@ export default function CreateCharlaForm() {
         {/* Título del Formulario */}
         <div>
           <label className="block text-xs font-bold uppercase mb-2">
-            Título sobre el Formulario <span className="text-red-500">*</span>
+            Título sobre el Formulario <span>*</span>
           </label>
           <input
             type="text" name="tituloFormulario" required
@@ -180,7 +180,7 @@ export default function CreateCharlaForm() {
         {/* Banner del Evento (Imagen Principal) */}
         <div>
           <label className="block text-xs font-bold uppercase mb-2">
-            Banner del Evento <span className="text-red-500">*</span> <span className="text-gray-400 font-normal text-[11px]">(Imagen sin fondo .png, proporción 1:1)</span>
+            Banner del Evento <span>*</span> <span>(Imagen sin fondo en .png, en proporción 1:1 idealmente)</span>
           </label>
           <input
             type="file" name="banner" accept="image/*"
@@ -191,7 +191,7 @@ export default function CreateCharlaForm() {
         {/* Imagen de Fondo del Banner */}
         <div>
           <label className="block text-xs font-bold uppercase mb-2">
-            Imagen de Fondo para el Banner <span className="text-gray-400 font-normal text-[11px]">(Opcional, por defecto usará fondo cemento)</span>
+            Imagen de Fondo para el Banner <span></span> <span>(Opcional, por defecto usará un fondo de cemento)</span>
           </label>
           <input
             type="file" name="fondoBanner" accept="image/*"
@@ -203,7 +203,7 @@ export default function CreateCharlaForm() {
       {/* Logos de Organizadores */}
       <div className="pt-2">
         <label className="block text-xs font-bold uppercase mb-2">
-          Logos de Organizadores (Grupo de Imágenes - Máximo 9)
+          Logos de Organizadores (Máx 9) <span></span> <span>(Opcional, incluye por defecto el logo de Yura, seleccionar las imágenes en .png de forma agrupada)</span>
         </label>
         <input
           type="file" name="logos" multiple accept="image/*" onChange={handleLogoChange}

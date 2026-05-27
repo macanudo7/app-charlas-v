@@ -137,12 +137,18 @@
 }
 @media (max-width: 768px) {
     .eventBanner img{
-        height: 70vh;
+        /* height: 70vh; */
+        height: fit-content;
+        padding-top: 20px;
+        padding-bottom: 20px;
     }
     .eventBanner svg{
         height: 80px;
     }
     .eventGoTo{
         top: -40px;
+    }
+    .eventForm>div{
+        padding-top: 40px;
     }
 }

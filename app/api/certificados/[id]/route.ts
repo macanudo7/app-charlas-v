@@ -103,41 +103,41 @@ export async function GET(
 
             page.drawText(nombreCompleto, {
                 x,
-                y: 450,
+                y: 420,
                 size: 25,
                 font,
                 color: rgb(0.1, 0.1, 0.1),
             });
 
             // NOMBRE EVENTO
-            const eventoSize = 18;
+            // const eventoSize = 18;
 
-            const eventoWidth = font.widthOfTextAtSize(
-                charla.nombreEvento,
-                eventoSize
-            );
+            // const eventoWidth = font.widthOfTextAtSize(
+            //     charla.nombreEvento,
+            //     eventoSize
+            // );
 
-            const eventoX = (page.getWidth() - eventoWidth) / 2;
+            // const eventoX = (page.getWidth() - eventoWidth) / 2;
 
-            page.drawText(charla.nombreEvento, {
-                x: eventoX,
-                y: 330,
-                size: 22,
-                font,
-                color: rgb(0.2, 0.2, 0.2),
-            });
+            // page.drawText(charla.nombreEvento, {
+            //     x: eventoX,
+            //     y: 330,
+            //     size: 22,
+            //     font,
+            //     color: rgb(0.2, 0.2, 0.2),
+            // });
 
-            // FECHA
-            const fecha = new Date(charla.fecha)
-                .toLocaleDateString("es-PE");
+            // // FECHA
+            // const fecha = new Date(charla.fecha)
+            //     .toLocaleDateString("es-PE");
 
-            page.drawText(fecha, {
-                x: 350,
-                y: 195,
-                size: 18,
-                font,
-                color: rgb(0.3, 0.3, 0.3),
-            });
+            // page.drawText(fecha, {
+            //     x: 350,
+            //     y: 195,
+            //     size: 18,
+            //     font,
+            //     color: rgb(0.3, 0.3, 0.3),
+            // });
 
             // Guardar PDF
             const pdfBytes = new Uint8Array(await pdfDoc.save());
