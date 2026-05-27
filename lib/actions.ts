@@ -110,9 +110,13 @@ export async function crearCharla(
     const fechaInput = formData.get("fecha") as string;
     const tituloFormulario = formData.get("tituloFormulario") as string;
 
-    // Validaciones básicas del lado del servidor
-    if (!nombreEvento || !slug || !fechaInput || !tituloFormulario) {
-      return { success: false, error: "Todos los campos obligatorios deben estar llenos." };
+    // 🚀 CAPTURAMOS DEPARTAMENTO Y PROVINCIA DESDE EL FORMDATA
+    const departamentoLugar = formData.get("departamentoLugar") as string;
+    const provinciaLugar = formData.get("provinciaLugar") as string;
+
+    // Validaciones básicas del lado del servidor (AÑADIDAS LAS NUEVAS OBLIGATORIAS)
+    if (!nombreEvento || !slug || !fechaInput || !tituloFormulario || !departamentoLugar || !provinciaLugar) {
+      return { success: false, error: "Todos los campos obligatorios deben estar llenos, incluyendo el lugar del evento." };
     }
 
     const supabase = getSupabaseClient();
@@ -182,7 +186,9 @@ export async function crearCharla(
       banner: urlBanner,       // Guardará null o la url de supabase: https://...
       fondoBanner: urlFondo,   // Guardará null o la url de supabase: https://...
       activo: true,
-      logos: [] // Inicializa el json vacío según tu esquema
+      logos: [], // Inicializa el json vacío según tu esquema
+      departamentoLugar, // Guardará "AREQUIPA", "LIMA", etc.
+      provinciaLugar,    // Guardará "AREQUIPA", "CAYLLOMA", etc.
     });
 
     // 5. Rompemos la caché de Next.js para que el listado de charlas se actualice al instante

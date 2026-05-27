@@ -22,6 +22,11 @@ export const charlas = pgTable("charlas", {
   fondoBanner: text("fondo_banner"), 
   logos: json("logos").default([]),
   activo: boolean("activo").default(true),
+  // 🚀 NUEVOS CAMPOS: Lugar donde se realizará el evento
+  departamentoLugar: varchar("departamento_lugar", { length: 100 }),
+  provinciaLugar: varchar("provincia_lugar", { length: 100 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  
 });
 
 // 3. Tabla de Participantes (Trabajadores/Estudiantes)

@@ -1,26 +1,59 @@
 'use client';
 
-import { crearCharla } from "@/lib/actions";
+import { crearCharla, obtenerDepartamentos, obtenerProvinciasPorDepartamento } from "@/lib/actions";
 import { useActionState, useState, useEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
 
+// 📝 Interfaz para tipar los elementos de Ubigeo
+interface UbigeoItem {
+  id: string;
+  nombre: string;
+}
+
 export default function CreateCharlaForm() {
-  // 1. 🔄 Cambiamos 'errorMessage' por 'state' porque ahora recibe { success, error, mensaje }
   const [state, dispatch] = useActionState(crearCharla, undefined);
   const [logoCount, setLogoCount] = useState(0);
-  const formRef = useRef<HTMLFormElement>(null); // Referencia para limpiar el formulario al terminar
+  const formRef = useRef<HTMLFormElement>(null);
 
-  // ✨ Si todo sale bien (state.success es true), limpiamos los campos de forma segura
-useEffect(() => {
-  if (state?.success) {
-    formRef.current?.reset();
-    
-    // 🛡️ Solo ejecutamos el setState si el contador es mayor a 0, evitando renders en cascada
-    if (logoCount > 0) {
-      setLogoCount(0);
+  // 🚀 ESTADOS PARA EL UBIGEO DINÁMICO DEL LUGAR DEL EVENTO
+  const [listasLugar, setListasLugar] = useState<{
+    departamentos: UbigeoItem[];
+    provincias: UbigeoItem[];
+  }>({ departamentos: [], provincias: [] });
+
+  const [seleccionLugar, setSeleccionLugar] = useState({
+    departamentoId: "",
+    provinciaId: ""
+  });
+
+  // 1. 🌍 Cargar departamentos al montar el componente administrativo
+  useEffect(() => {
+    obtenerDepartamentos().then((data) => {
+      setListasLugar(prev => ({ ...prev, departamentos: data }));
+    });
+  }, []);
+
+  // 2. 🔄 Manejar el cambio de departamento para actualizar las provincias
+  const handleCambioDepartamento = async (idDep: string) => {
+    setSeleccionLugar({ departamentoId: idDep, provinciaId: "" });
+    setListasLugar(prev => ({ ...prev, provincias: [] }));
+
+    if (idDep) {
+      const provs = await obtenerProvinciasPorDepartamento(idDep);
+      setListasLugar(prev => ({ ...prev, provincias: provs }));
     }
-  }
-}, [state, logoCount]); // 👈 Añadimos logoCount a las dependencias exigidas por React
+  };
+
+  // ✨ Si todo sale bien, limpiamos los campos de forma segura (Ya no dará error setSeleccionLugar)
+  useEffect(() => {
+    if (state?.success) {
+      formRef.current?.reset();
+      setSeleccionLugar({ departamentoId: "", provinciaId: "" });
+      if (logoCount > 0) {
+        setLogoCount(0);
+      }
+    }
+  }, [state, logoCount]);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -36,17 +69,16 @@ useEffect(() => {
   };
 
   return (
-    // Añadimos el ref aquí para poder resetearlo en el useEffect
     <form ref={formRef} action={dispatch} encType="multipart/form-data" className="space-y-6 p-4">
       
-      {/* 🛑 Pintamos el error si existe accediendo a state.error */}
+      {/* 🛑 Mensaje de error */}
       {state?.error && (
         <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded text-sm font-medium">
           {state.error}
         </div>
       )}
 
-      {/* 🎉 Pintamos el mensaje de éxito si todo salió bien desde state.mensaje */}
+      {/* 🎉 Mensaje de éxito */}
       {state?.mensaje && (
         <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded text-sm font-medium">
           {state.mensaje}
@@ -106,18 +138,57 @@ useEffect(() => {
           />
         </div>
 
+        {/* 🚀 DEPARTAMENTO DEL LUGAR DEL EVENTO */}
+        <div>
+          <label className="block text-xs font-bold uppercase mb-2">
+            Departamento (Lugar del Evento) <span className="text-red-500">*</span>
+          </label>
+          <select
+            name="departamentoLugar"
+            required
+            value={seleccionLugar.departamentoId}
+            onChange={(e) => handleCambioDepartamento(e.target.value)}
+            className="w-full border border-gray-300 text-sm p-2 focus:outline-none focus:border-[#1b1c54] bg-white"
+          >
+            <option value="">-- Seleccione --</option>
+            {listasLugar.departamentos.map((dep) => (
+              <option key={dep.id} value={dep.id}>{dep.nombre}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* 🚀 PROVINCIA DEL LUGAR DEL EVENTO */}
+        <div>
+          <label className="block text-xs font-bold uppercase mb-2">
+            Provincia (Lugar del Evento) <span className="text-red-500">*</span>
+          </label>
+          <select
+            name="provinciaLugar"
+            required
+            value={seleccionLugar.provinciaId}
+            disabled={!seleccionLugar.departamentoId}
+            onChange={(e) => setSeleccionLugar(prev => ({ ...prev, provinciaId: e.target.value }))}
+            className="w-full border border-gray-300 text-sm p-2 focus:outline-none focus:border-[#1b1c54] bg-white disabled:bg-gray-100"
+          >
+            <option value="">-- Seleccione --</option>
+            {listasLugar.provincias.map((prov) => (
+              <option key={prov.id} value={prov.id}>{prov.nombre}</option>
+            ))}
+          </select>
+        </div>
+
         {/* Banner del Evento (Imagen Principal) */}
         <div>
           <label className="block text-xs font-bold uppercase mb-2">
             Banner del Evento <span className="text-red-500">*</span> <span className="text-gray-400 font-normal text-[11px]">(Imagen sin fondo .png, proporción 1:1)</span>
           </label>
           <input
-            type="file" name="banner" accept="image/*" required // 👈 Obligatorio ya que lo pides en el backend
+            type="file" name="banner" accept="image/*"
             className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
           />
         </div>
 
-        {/* Imagen de Fondo del Banner (CAMBIADO A FILE) */}
+        {/* Imagen de Fondo del Banner */}
         <div>
           <label className="block text-xs font-bold uppercase mb-2">
             Imagen de Fondo para el Banner <span className="text-gray-400 font-normal text-[11px]">(Opcional, por defecto usará fondo cemento)</span>
@@ -129,7 +200,7 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Logos de Organizadores (Array de imágenes) */}
+      {/* Logos de Organizadores */}
       <div className="pt-2">
         <label className="block text-xs font-bold uppercase mb-2">
           Logos de Organizadores (Grupo de Imágenes - Máximo 9)

@@ -19,38 +19,23 @@ interface EventoPageProps {
 }
 
 interface Evento {
-  id: number
-  nombreEvento: string
-  slug: string
-  banner: string | null
-  fondoBanner: string | null
-  tituloFormulario: string
-  logos: string[] | null
+  id: number;
+  nombreEvento: string;
+  slug: string;
+  banner: string | null;
+  fondoBanner: string | null;
+  tituloFormulario: string;
+  logos: string[] | null;
+  // 🚀 ACTUALIZAMOS LA INTERFAZ CON LOS CAMPOS DE UBIGEO DE LA CHARLA
+  departamentoLugar: string | null;
+  provinciaLugar: string | null;
 }
 
-// Nota: Como ahora es un Client Component, si necesitas traer la 'charla' de la BD al cargar,
-// lo ideal es pasarle los datos desde un page.tsx padre, o usar 'use' de React si mantienes la firma.
-// Para este ejemplo, asumiremos que recibes los datos necesarios o usas fetch. 
-// Aquí nos enfocamos en la lógica del formulario interactivo:
-
 export default function EventoPublicPage({ params, charlaId }: EventoPageProps) {
-
-  const { slug } = use(params); // Desempaquetamos el slug en cliente
+  const { slug } = use(params); 
   const router = useRouter();
 
-
-  // Traer la información registrada de la creación del evento para mostrarlo en el front
-  const [evento, setEvento] = useState<Evento | null>(null)
-
-  useEffect(() => {
-    const cargarEvento = async () => {
-      const data = await obtenerEventoPorSlug(slug);
-      
-      // 🚀 Le aseguramos a TypeScript que los datos coinciden con nuestra interfaz Cliente
-      setEvento(data as Evento | null);
-    };
-    cargarEvento();
-  }, [slug]);
+  const [evento, setEvento] = useState<Evento | null>(null);
 
   // Estados para Ubigeo Dinámico
   const [listas, setListas] = useState<{
@@ -65,14 +50,48 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
     distrito: ""
   });
 
-  // Cargar departamentos del SQL al montar la pantalla
+  // 🚀 1. UNIFICAMOS LA CARGA DEL EVENTO Y LA AUTOSELECCIÓN POR CÓDIGO
   useEffect(() => {
-    obtenerDepartamentos().then((data) => {
-      setListas(prev => ({ ...prev, departamentos: data }));
-    });
-  }, []);
+    const cargarEventoYUbigeo = async () => {
+      // Carga los datos de la charla
+      const data = await obtenerEventoPorSlug(slug);
+      const eventoData = data as Evento | null;
+      setEvento(eventoData);
 
-  // Al cambiar Departamento -> Cargar Provincias reales
+      // Carga la lista inicial de departamentos
+      const deps = await obtenerDepartamentos();
+      setListas(prev => ({ ...prev, departamentos: deps }));
+
+      // Si el evento tiene un departamento configurado por código (Ej: "04")
+      if (eventoData?.departamentoLugar) {
+        const depId = eventoData.departamentoLugar;
+        
+        // Traemos las provincias asociadas a ese código de departamento
+        const provs = await obtenerProvinciasPorDepartamento(depId);
+        
+        // Verificamos si la provincia de la charla existe en la lista devuelta
+        const provId = eventoData.provinciaLugar || "";
+        const tieneProvincia = provs.some(p => p.id === provId);
+
+        setListas(prev => ({ ...prev, provincias: provs }));
+        setSeleccion(prev => ({
+          ...prev,
+          departamento: depId,
+          provincia: tieneProvincia ? provId : ""
+        }));
+
+        // Si hay una provincia válida, precargamos sus distritos automáticamente
+        if (tieneProvincia && provId) {
+          const dists = await obtenerDistritosPorProvincia(provId);
+          setListas(prev => ({ ...prev, distritos: dists }));
+        }
+      }
+    };
+
+    cargarEventoYUbigeo();
+  }, [slug]); // 👈 Solo depende del slug del evento
+
+  // Al cambiar Departamento manualmente -> Cargar Provincias reales
   const handleCambioDepartamento = async (idDep: string) => {
     setSeleccion({ departamento: idDep, provincia: "", distrito: "" });
     setListas(prev => ({ ...prev, provincias: [], distritos: [] }));
@@ -83,7 +102,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
     }
   };
 
-  // Al cambiar Provincia -> Cargar Distritos reales
+  // Al cambiar Provincia manualmente -> Cargar Distritos reales
   const handleCambioProvincia = async (idProv: string) => {
     setSeleccion(prev => ({ ...prev, provincia: idProv, distrito: "" }));
     setListas(prev => ({ ...prev, distritos: [] }));
@@ -94,20 +113,17 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
     }
   };
 
-
-
   // Estados para el autocompletado y carga
   const [dni, setDni] = useState("");
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
   const [buscando, setBuscando] = useState(false);
   const [errorDni, setErrorDni] = useState("");
-  //const [area, setArea] = useState("");
   const [correo, setCorreo] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [mensajeExito, setMensajeExito] = useState("");
   const [errorFormulario, setErrorFormulario] = useState("");
-  const [telefono, setTelefono] = useState(""); // Guarda el Celular
+  const [telefono, setTelefono] = useState(""); 
 
   // Handler que se ejecuta al enviar el formulario completo
   const handleSubmitRegistro = async (e: React.FormEvent) => {
@@ -116,7 +132,6 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
     setMensajeExito("");
     setGuardando(true);
 
-    // Encontrando los nombres de texto correspondientes para guardar en tu varchar de texto
     const nombreDep = listas.departamentos.find(d => d.id === seleccion.departamento)?.nombre || "";
     const nombreProv = listas.provincias.find(p => p.id === seleccion.provincia)?.nombre || "";
     const nombreDist = listas.distritos.find(d => d.id === seleccion.distrito)?.nombre || "";
@@ -127,7 +142,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
       apellido,
       correo,
       telefono,
-      area:"",
+      area: "",
       departamento: nombreDep,
       provincia: nombreProv,
       distrito: nombreDist,
@@ -138,15 +153,20 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
 
     if (resultado.success) {
       setMensajeExito("¡Registro completado con éxito! Tu asistencia ha sido confirmada.");
-      // Limpiamos el formulario
-      setDni(""); setNombre(""); setApellido(""); setCorreo("");
-      setSeleccion({ departamento: "", provincia: "", distrito: "" });
+      setDni(""); setNombre(""); setApellido(""); setCorreo(""); setTelefono("");
+      
+      // Al limpiar, regresamos a la selección predeterminada del evento
+      if (evento?.departamentoLugar) {
+        handleCambioDepartamento(evento.departamentoLugar);
+      } else {
+        setSeleccion({ departamento: "", provincia: "", distrito: "" });
+      }
     } else {
       setErrorFormulario(resultado.error || "Ocurrió un error.");
     }
   };
 
-  // Función que conecta con el Server Action
+  // Función que conecta con el Server Action de la RENIEC
   const handleBuscarDni = async () => {
     if (dni.length !== 8) {
       setErrorDni("El DNI debe tener 8 dígitos numéricos.");
@@ -155,9 +175,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
 
     setErrorDni("");
     setBuscando(true);
-
     const resultado = await consultarDni(dni);
-
     setBuscando(false);
 
     if (resultado.success) {
@@ -165,7 +183,6 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
       setApellido(resultado.apellido || "");
     } else {
       setErrorDni(resultado.error || "No se encontró el DNI.");
-      // Limpiamos los campos para evitar registros inconsistentes
       setNombre("");
       setApellido("");
     }
@@ -179,11 +196,8 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
     );
   }
 
-
-
   return (
     <div className="min-h-screen bg-[#eaeaea] text-gray-800 flex flex-col justify-between">
-
       {/* BANNER INSTITUCIONAL YURA */}
       <div className={`${eventStyle.eventBanner} flex items-center justify-center`}
         style={{ backgroundImage: `url(${evento?.fondoBanner || "/img/bg-concreteras-form.webp"})` }}
@@ -218,8 +232,6 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
 
         <div className="relative mx-auto flex w-full flex-col gap-4 p-4 max-w-6xl">
           <div className="p-3" id="formulario">
-
-            {/* Controlamos si se muestra el mensaje de éxito o los campos del formulario */}
             {mensajeExito ? (
               <div className={`${eventStyle.eventFormSucess} border p-8 rounded text-center space-y-4 max-w-2xl mx-auto my-10 shadow-md`}>
                 <span className="text-4xl">✅</span>
@@ -242,7 +254,6 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
 
                 <div className="pt-10">
                   <form onSubmit={handleSubmitRegistro} className="space-y-4">
-
                     <div className="grid grid-cols-1 gap-4">
                       {/* BUSCADOR DE DNI */}
                       <div>
@@ -283,7 +294,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* Nombre (AUTOCOMPLETADO) */}
+                      {/* Nombres */}
                       <div>
                         <label className="block text-xs font-bold uppercase mb-1">
                           Nombres <span className="text-red-500">*</span>
@@ -300,7 +311,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                         />
                       </div>
 
-                      {/* Apellido (AUTOCOMPLETADO) */}
+                      {/* Apellidos */}
                       <div>
                         <label className="block text-xs font-bold uppercase mb-1">
                           Apellidos <span className="text-red-500">*</span>
@@ -335,7 +346,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                         />
                       </div>
 
-                      {/* Teléfono */}
+                      {/* Celular */}
                       <div>
                         <label className="block text-xs font-bold uppercase mb-1">
                           Celular <span className="text-red-500">*</span>
@@ -345,7 +356,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                           name="telefono"
                           required
                           value={telefono}
-                          onChange={(e) => setTelefono(e.target.value.replace(/[^0-9]/g, ""))} // Solo números en celular
+                          onChange={(e) => setTelefono(e.target.value.replace(/[^0-9]/g, ""))}
                           className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-[#1b1c54]"
                           placeholder="Ej: 987654321"
                         />
@@ -353,8 +364,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                     </div>
 
                     {/* UBICACIÓN DINÁMICA DE SUPABASE */}
-                    <div className="">
-
+                    <div>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {/* DEPARTAMENTO */}
                         <div>
@@ -414,7 +424,6 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                       </div>
                     </div>
 
-                    {/* Mensajes de error del Servidor */}
                     {errorFormulario && (
                       <p className="text-red-500 text-xs font-bold bg-red-50 p-3 border border-red-300 rounded text-center">
                         ⚠️ {errorFormulario}
@@ -440,7 +449,6 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                 </div>
               </>
             )}
-
           </div>
         </div>
       </div>
@@ -461,7 +469,6 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                 className="h-auto w-full max-w-40 object-contain mt-4"
               />
               {evento?.logos?.map((logo) => (
-
                 <Image
                   key={logo}
                   src={logo}
@@ -470,7 +477,6 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                   height={180}
                   className="mt-4"
                 />
-
               ))}
             </div>
           </div>
