@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { consultarDni } from "@/lib/actions";
 import Image from "next/image";
 import eventStyle from "@/app/evento/[slug]/page.module.css";
-import { obtenerDepartamentos, obtenerProvinciasPorDepartamento, obtenerDistritosPorProvincia, registrarParticipante, obtenerEventoPorSlug} from "@/lib/actions";
+import { obtenerDepartamentos, obtenerProvinciasPorDepartamento, obtenerDistritosPorProvincia, registrarParticipante, obtenerEventoPorSlug } from "@/lib/actions";
 
 // Estructura interna para los combos
 interface UbigeoItem {
@@ -35,7 +35,18 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
   const { slug } = use(params); 
   const router = useRouter();
 
-  const [evento, setEvento] = useState<Evento | null>(null);
+  // Traer la información registrada de la creación del evento para mostrarlo en el front
+  const [evento, setEvento] = useState<Evento | null>(null)
+
+  useEffect(() => {
+    const cargarEvento = async () => {
+      const data = await obtenerEventoPorSlug(slug);
+
+      // 🚀 Le aseguramos a TypeScript que los datos coinciden con nuestra interfaz Cliente
+      setEvento(data as Evento | null);
+    };
+    cargarEvento();
+  }, [slug]);
 
   // Estados para Ubigeo Dinámico
   const [listas, setListas] = useState<{
@@ -113,6 +124,98 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
     }
   };
 
+  // Validador de errores para el formulario
+  const [errores, setErrores] = useState({
+    dni: "",
+    nombre: "",
+    apellido: "",
+    correo: "",
+    telefono: "",
+    departamento: "",
+    provincia: "",
+    distrito: "",
+  });
+
+  const validarFormulario = () => {
+
+    const nuevosErrores = {
+      dni: "",
+      nombre: "",
+      apellido: "",
+      correo: "",
+      telefono: "",
+      departamento: "",
+      provincia: "",
+      distrito: "",
+    };
+
+    let valido = true;
+
+    // DNI
+    if (!dni) {
+      nuevosErrores.dni = "Ingrese su DNI para autocompletar sus nombres y apellidos";
+      valido = false;
+    } else if (dni.length !== 8) {
+      nuevosErrores.dni = "El DNI debe tener 8 dígitos";
+      valido = false;
+    }
+
+    // Nombre
+    if (!nombre) {
+      nuevosErrores.nombre = "Debe buscar un DNI válido";
+      valido = false;
+    }
+
+    // Apellido
+    if (!apellido) {
+      nuevosErrores.apellido = "Debe buscar un DNI válido";
+      valido = false;
+    }
+
+    // Correo
+    // if (!correo) {
+    //   nuevosErrores.correo = "Ingrese un correo válido";
+    //   valido = false;
+    // } else if (!/\S+@\S+\.\S+/.test(correo)) {
+    //   nuevosErrores.correo = "Correo inválido, intente nuevamente";
+    //   valido = false;
+    // }
+
+    // Celular
+    if (!telefono) {
+      nuevosErrores.telefono = "Ingrese su celular";
+      valido = false;
+    } else if (telefono.length < 9) {
+      nuevosErrores.telefono = "Celular inválido, intente nuevamente";
+      valido = false;
+    }
+
+    // Departamento
+    if (!seleccion.departamento) {
+      nuevosErrores.departamento = "Seleccione un departamento primero";
+      valido = false;
+    }
+
+    // Provincia
+    if (!seleccion.provincia) {
+      nuevosErrores.provincia = "Seleccione una provincia después de departamento";
+      valido = false;
+    }
+
+    // Distrito
+    if (!seleccion.distrito) {
+      nuevosErrores.distrito = "Seleccione un distrito después de provincia";
+      valido = false;
+    }
+
+    setErrores(nuevosErrores);
+
+    return valido;
+  };
+
+
+
+
   // Estados para el autocompletado y carga
   const [dni, setDni] = useState("");
   const [nombre, setNombre] = useState("");
@@ -130,6 +233,14 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
     e.preventDefault();
     setErrorFormulario("");
     setMensajeExito("");
+
+    const esValido = validarFormulario();
+
+    if (!esValido) {
+      setErrorFormulario("Complete todos los campos obligatorios.");
+      return;
+    }
+
     setGuardando(true);
 
     const nombreDep = listas.departamentos.find(d => d.id === seleccion.departamento)?.nombre || "";
@@ -168,8 +279,13 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
 
   // Función que conecta con el Server Action de la RENIEC
   const handleBuscarDni = async () => {
+    if (!dni) {
+      setErrorDni("Ingrese su DNI");
+      return;
+    }
+  
     if (dni.length !== 8) {
-      setErrorDni("El DNI debe tener 8 dígitos numéricos.");
+      setErrorDni("El DNI debe tener 8 dígitos numéricos");
       return;
     }
 
@@ -248,15 +364,19 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                 <div className={`${eventStyle.eventFormTitle} font-bold text-xl md:text-3xl pb-4`}>
                   {evento?.tituloFormulario || "Acompáñenos en este importante<br />evento del sector"}
                 </div>
-                <p className={`${eventStyle.eventFormDesc} text-white-500 mt-1`}>
+                {/* <p className={`${eventStyle.eventFormDesc} text-white-500 mt-1`}>
                   Digita tu DNI y presiona la lupa para buscar tus datos en RENIEC de forma automática.
-                </p>
+                </p> */}
 
                 <div className="pt-10">
                   <form onSubmit={handleSubmitRegistro} className="space-y-4">
                     <div className="grid grid-cols-1 gap-4">
                       {/* BUSCADOR DE DNI */}
                       <div>
+                        <span className="text-md text-white">
+                          1. Ingresa tu DNI y se completarán automáticamente tu nombre y apellidos al presionar la lupa.
+                        </span>
+                        <hr className="border-t border-[#33b5e7] mt-2 mb-6"></hr>
                         <label className="block text-xs font-bold uppercase mb-1">
                           DNI (Buscar) <span className="text-red-500">*</span>
                         </label>
@@ -264,17 +384,20 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                           <input
                             type="text"
                             name="dni"
-                            required
+                            // required
                             maxLength={8}
                             value={dni}
                             onChange={(e) => setDni(e.target.value.replace(/[^0-9]/g, ""))}
-                            className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-[#1b1c54]"
+                            className={`w-full border px-3 py-2 text-sm focus:outline-none ${errores.dni
+                              ? "border-red-500"
+                              : "border-gray-300 focus:border-[#1b1c54]"
+                              }`}
                             placeholder="8 dígitos"
                           />
                           <button
                             type="button"
                             onClick={handleBuscarDni}
-                            disabled={buscando || dni.length !== 8}
+                            disabled={buscando}
                             className={`${eventStyle.eventFormBtn2} hover:bg-[#252774] disabled:bg-gray-300 text-white px-4 flex items-center justify-center transition-colors shadow`}
                             title="Buscar DNI en Reniec"
                           >
@@ -287,8 +410,10 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                             )}
                           </button>
                         </div>
-                        {errorDni && (
-                          <p className="text-red-500 text-[11px] font-semibold mt-1">{errorDni}</p>
+                        {(errorDni || errores.dni) && (
+                          <p className="text-red-500 text-[11px] mt-1 font-medium">
+                            {errores.dni || errorDni}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -302,13 +427,23 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                         <input
                           type="text"
                           name="nombre"
-                          required
+                          // required
                           value={nombre}
                           onChange={(e) => setNombre(e.target.value)}
                           readOnly={nombre.length > 0}
-                          className={`w-full border px-3 py-2 text-sm focus:outline-none ${nombre.length > 0 ? 'bg-gray-50 border-gray-200 text-gray-600 font-medium' : 'border-gray-300 focus:border-[#1b1c54]'}`}
-                          placeholder="Se auto-completa al buscar su DNI"
+                          className={`w-full border px-3 py-2 text-sm focus:outline-none ${errores.nombre
+                            ? "border-red-500 bg-red-50"
+                            : nombre.length > 0
+                              ? "bg-gray-50 border-gray-200 text-gray-600 font-medium"
+                              : "border-gray-300 focus:border-[#1b1c54]"
+                            }`}
+                          placeholder="Se auto-completa al buscar tu DNI"
                         />
+                        {errores.nombre && (
+                          <p className="text-red-500 text-[11px] mt-1 font-medium">
+                            {errores.nombre}
+                          </p>
+                        )}
                       </div>
 
                       {/* Apellidos */}
@@ -319,26 +454,39 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                         <input
                           type="text"
                           name="apellido"
-                          required
+                          // required
                           value={apellido}
                           onChange={(e) => setApellido(e.target.value)}
                           readOnly={apellido.length > 0}
-                          className={`w-full border px-3 py-2 text-sm focus:outline-none ${apellido.length > 0 ? 'bg-gray-50 border-gray-200 text-gray-600 font-medium' : 'border-gray-300 focus:border-[#1b1c54]'}`}
-                          placeholder="Se auto-completa al buscar su DNI"
+                          className={`w-full border px-3 py-2 text-sm focus:outline-none ${errores.apellido
+                            ? "border-red-500 bg-red-50"
+                            : apellido.length > 0
+                              ? "bg-gray-50 border-gray-200 text-gray-600 font-medium"
+                              : "border-gray-300 focus:border-[#1b1c54]"
+                            }`}
+                          placeholder="Se auto-completa al buscar tu DNI"
                         />
+                        {errores.apellido && (
+                          <p className="text-red-500 text-[11px] mt-1 font-medium">
+                            {errores.apellido}
+                          </p>
+                        )}
                       </div>
                     </div>
 
+                    <span className="text-md text-white mt-12 mb-0 block">
+                      2. Dejanos tus datos de contacto para mantenerte informado de futuras capacitaciones.
+                    </span>
+                    <hr className="border-t border-[#33b5e7] mt-2 mb-6"></hr>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {/* Correo */}
                       <div>
                         <label className="block text-xs font-bold uppercase mb-1">
-                          Correo Electrónico <span className="text-red-500">*</span>
+                          Correo Electrónico
                         </label>
                         <input
                           type="email"
                           name="correo"
-                          required
                           value={correo}
                           onChange={(e) => setCorreo(e.target.value)}
                           className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-[#1b1c54]"
@@ -354,17 +502,29 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                         <input
                           type="tel"
                           name="telefono"
-                          required
+                          // required
                           value={telefono}
-                          onChange={(e) => setTelefono(e.target.value.replace(/[^0-9]/g, ""))}
-                          className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-[#1b1c54]"
+                          onChange={(e) => setTelefono(e.target.value.replace(/[^0-9]/g, ""))} // Solo números en celular
+                          className={`w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none ${errores.telefono
+                            ? "border-red-500"
+                            : "border-gray-300 focus:border-[#1b1c54]"
+                            }`}
                           placeholder="Ej: 987654321"
                         />
+                        {errores.telefono && (
+                          <p className="text-red-500 text-[11px] mt-1 font-medium">
+                            {errores.telefono}
+                          </p>
+                        )}
                       </div>
                     </div>
 
                     {/* UBICACIÓN DINÁMICA DE SUPABASE */}
-                    <div>
+                    <div className="">
+                      <span className="text-md text-white mt-12 block">
+                        3. Selecciona primero tu departamento, luego provincia y finalmente distrito en ese orden.
+                      </span>
+                      <hr className="border-t border-[#33b5e7] mt-2 mb-6"></hr>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {/* DEPARTAMENTO */}
                         <div>
@@ -375,13 +535,22 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                             name="departamento"
                             value={seleccion.departamento}
                             onChange={(e) => handleCambioDepartamento(e.target.value)}
-                            className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm bg-white focus:outline-none focus:border-[#1b1c54]"
+                            className={`w-full border rounded px-3 py-1.5 text-sm bg-white focus:outline-none ${errores.departamento
+                              ? "border-red-500 bg-red-50"
+                              : "border-gray-300 focus:border-[#1b1c54]"
+                              }`}
                           >
-                            <option value="">-- Seleccione --</option>
+                            <option value="">-- Selecciona tu departamento --</option>
                             {listas.departamentos.map((dep) => (
                               <option key={dep.id} value={dep.id}>{dep.nombre}</option>
                             ))}
                           </select>
+
+                          {errores.departamento && (
+                            <p className="text-red-500 text-[11px] mt-1 font-medium">
+                              {errores.departamento}
+                            </p>
+                          )}
                         </div>
 
                         {/* PROVINCIA */}
@@ -394,9 +563,12 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                             value={seleccion.provincia}
                             disabled={!seleccion.departamento}
                             onChange={(e) => handleCambioProvincia(e.target.value)}
-                            className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm bg-white disabled:bg-gray-100 focus:outline-none focus:border-[#1b1c54]"
+                            className={`w-full border rounded px-3 py-1.5 text-sm bg-white focus:outline-none ${errores.provincia
+                              ? "border-red-500 bg-red-50"
+                              : "border-gray-300 focus:border-[#1b1c54]"
+                              }`}
                           >
-                            <option value="">-- Seleccione --</option>
+                            <option value="">-- Primero selecciona tu departamento --</option>
                             {listas.provincias.map((prov) => (
                               <option key={prov.id} value={prov.id}>{prov.nombre}</option>
                             ))}
@@ -413,9 +585,12 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                             value={seleccion.distrito}
                             disabled={!seleccion.provincia}
                             onChange={(e) => setSeleccion(prev => ({ ...prev, distrito: e.target.value }))}
-                            className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm bg-white disabled:bg-gray-100 focus:outline-none focus:border-[#1b1c54]"
+                            className={`w-full border rounded px-3 py-1.5 text-sm bg-white focus:outline-none ${errores.distrito
+                              ? "border-red-500 bg-red-50"
+                              : "border-gray-300 focus:border-[#1b1c54]"
+                              }`}
                           >
-                            <option value="">-- Seleccione --</option>
+                            <option value="">-- Primero selecciona tu provincia --</option>
                             {listas.distritos.map((dist) => (
                               <option key={dist.id} value={dist.id}>{dist.nombre}</option>
                             ))}
@@ -425,7 +600,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                     </div>
 
                     {errorFormulario && (
-                      <p className="text-red-500 text-xs font-bold bg-red-50 p-3 border border-red-300 rounded text-center">
+                      <p className="text-red-500 text-xs font-bold bg-red-200 p-3 border border-red-300 rounded text-center">
                         ⚠️ {errorFormulario}
                       </p>
                     )}
@@ -433,7 +608,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                     {/* BOTÓN DE CONFIRMACIÓN */}
                     <button
                       type="submit"
-                      disabled={guardando || !nombre || !apellido || !seleccion.departamento || !seleccion.provincia || !seleccion.distrito }
+                      disabled={guardando}
                       className={`${eventStyle.eventBtn} h-12 px-12 text-white transition mt-8 flex items-center justify-center gap-2 disabled:bg-gray-400`}
                     >
                       {guardando ? (
