@@ -32,7 +32,7 @@ interface Evento {
 }
 
 export default function EventoPublicPage({ params, charlaId }: EventoPageProps) {
-  const { slug } = use(params); 
+  const { slug } = use(params);
   const router = useRouter();
 
   // Traer la información registrada de la creación del evento para mostrarlo en el front
@@ -76,10 +76,10 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
       // Si el evento tiene un departamento configurado por código (Ej: "04")
       if (eventoData?.departamentoLugar) {
         const depId = eventoData.departamentoLugar;
-        
+
         // Traemos las provincias asociadas a ese código de departamento
         const provs = await obtenerProvinciasPorDepartamento(depId);
-        
+
         // Verificamos si la provincia de la charla existe en la lista devuelta
         const provId = eventoData.provinciaLugar || "";
         const tieneProvincia = provs.some(p => p.id === provId);
@@ -213,7 +213,12 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
     return valido;
   };
 
-
+  const limpiarError = (campo: keyof typeof errores) => {
+    setErrores(prev => ({
+      ...prev,
+      [campo]: ""
+    }));
+  };
 
 
   // Estados para el autocompletado y carga
@@ -226,7 +231,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
   const [guardando, setGuardando] = useState(false);
   const [mensajeExito, setMensajeExito] = useState("");
   const [errorFormulario, setErrorFormulario] = useState("");
-  const [telefono, setTelefono] = useState(""); 
+  const [telefono, setTelefono] = useState("");
 
   // Handler que se ejecuta al enviar el formulario completo
   const handleSubmitRegistro = async (e: React.FormEvent) => {
@@ -265,7 +270,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
     if (resultado.success) {
       setMensajeExito("¡Registro completado con éxito! Tu asistencia ha sido confirmada.");
       setDni(""); setNombre(""); setApellido(""); setCorreo(""); setTelefono("");
-      
+
       // Al limpiar, regresamos a la selección predeterminada del evento
       if (evento?.departamentoLugar) {
         handleCambioDepartamento(evento.departamentoLugar);
@@ -283,7 +288,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
       setErrorDni("Ingrese su DNI");
       return;
     }
-  
+
     if (dni.length !== 8) {
       setErrorDni("El DNI debe tener 8 dígitos numéricos");
       return;
@@ -297,6 +302,13 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
     if (resultado.success) {
       setNombre(resultado.nombre || "");
       setApellido(resultado.apellido || "");
+
+      setErrores(prev => ({
+        ...prev,
+        nombre: "",
+        apellido: "",
+        dni: ""
+      }));
     } else {
       setErrorDni(resultado.error || "No se encontró el DNI.");
       setNombre("");
@@ -387,12 +399,18 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                             // required
                             maxLength={8}
                             value={dni}
-                            onChange={(e) => setDni(e.target.value.replace(/[^0-9]/g, ""))}
+                            // onChange={(e) => setDni(e.target.value.replace(/[^0-9]/g, ""))}
+                            onChange={(e) => {
+                              setDni(e.target.value.replace(/[^0-9]/g, ""));
+                              setErrorDni("");
+                              limpiarError("dni");
+                            }}
                             className={`w-full border px-3 py-2 text-sm focus:outline-none ${errores.dni
                               ? "border-red-500"
                               : "border-gray-300 focus:border-[#1b1c54]"
                               }`}
                             placeholder="8 dígitos"
+
                           />
                           <button
                             type="button"
@@ -429,9 +447,12 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                           name="nombre"
                           // required
                           value={nombre}
-                          onChange={(e) => setNombre(e.target.value)}
+                          onChange={(e) => {
+                            setNombre(e.target.value);
+                            limpiarError("nombre");
+                          }}
                           readOnly={nombre.length > 0}
-                          className={`w-full border px-3 py-2 text-sm focus:outline-none ${errores.nombre
+                          className={`w-full border px-3 py-2 text-sm focus:outline-none ${!nombre && errores.nombre
                             ? "border-red-500 bg-red-50"
                             : nombre.length > 0
                               ? "bg-gray-50 border-gray-200 text-gray-600 font-medium"
@@ -456,9 +477,12 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                           name="apellido"
                           // required
                           value={apellido}
-                          onChange={(e) => setApellido(e.target.value)}
+                          onChange={(e) => {
+                            setApellido(e.target.value);
+                            limpiarError("apellido");
+                          }}
                           readOnly={apellido.length > 0}
-                          className={`w-full border px-3 py-2 text-sm focus:outline-none ${errores.apellido
+                          className={`w-full border px-3 py-2 text-sm focus:outline-none ${!apellido && errores.apellido
                             ? "border-red-500 bg-red-50"
                             : apellido.length > 0
                               ? "bg-gray-50 border-gray-200 text-gray-600 font-medium"
@@ -488,7 +512,10 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                           type="email"
                           name="correo"
                           value={correo}
-                          onChange={(e) => setCorreo(e.target.value)}
+                          onChange={(e) => {
+                            setCorreo(e.target.value);
+                            limpiarError("correo");
+                          }}
                           className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-[#1b1c54]"
                           placeholder="ejemplo@correo.com"
                         />
@@ -504,7 +531,10 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                           name="telefono"
                           // required
                           value={telefono}
-                          onChange={(e) => setTelefono(e.target.value.replace(/[^0-9]/g, ""))} // Solo números en celular
+                          onChange={(e) => {
+                            setTelefono(e.target.value.replace(/[^0-9]/g, ""));
+                            limpiarError("telefono");
+                          }}
                           className={`w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none ${errores.telefono
                             ? "border-red-500"
                             : "border-gray-300 focus:border-[#1b1c54]"
@@ -534,7 +564,10 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                           <select
                             name="departamento"
                             value={seleccion.departamento}
-                            onChange={(e) => handleCambioDepartamento(e.target.value)}
+                            onChange={(e) => {
+                              handleCambioDepartamento(e.target.value);
+                              limpiarError("departamento");
+                            }}
                             className={`w-full border rounded px-3 py-1.5 text-sm bg-white focus:outline-none ${errores.departamento
                               ? "border-red-500 bg-red-50"
                               : "border-gray-300 focus:border-[#1b1c54]"
@@ -562,7 +595,10 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                             name="provincia"
                             value={seleccion.provincia}
                             disabled={!seleccion.departamento}
-                            onChange={(e) => handleCambioProvincia(e.target.value)}
+                            onChange={(e) => {
+                              handleCambioProvincia(e.target.value);
+                              limpiarError("provincia");
+                            }}
                             className={`w-full border rounded px-3 py-1.5 text-sm bg-white focus:outline-none ${errores.provincia
                               ? "border-red-500 bg-red-50"
                               : "border-gray-300 focus:border-[#1b1c54]"
@@ -573,6 +609,12 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                               <option key={prov.id} value={prov.id}>{prov.nombre}</option>
                             ))}
                           </select>
+
+                          {errores.provincia && (
+                            <p className="text-red-500 text-[11px] mt-1 font-medium">
+                              {errores.provincia}
+                            </p>
+                          )}
                         </div>
 
                         {/* DISTRITO */}
@@ -584,7 +626,14 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                             name="distrito"
                             value={seleccion.distrito}
                             disabled={!seleccion.provincia}
-                            onChange={(e) => setSeleccion(prev => ({ ...prev, distrito: e.target.value }))}
+                            onChange={(e) => {
+                              setSeleccion(prev => ({
+                                ...prev,
+                                distrito: e.target.value
+                              }));
+
+                              limpiarError("distrito");
+                            }}
                             className={`w-full border rounded px-3 py-1.5 text-sm bg-white focus:outline-none ${errores.distrito
                               ? "border-red-500 bg-red-50"
                               : "border-gray-300 focus:border-[#1b1c54]"
@@ -595,6 +644,12 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                               <option key={dist.id} value={dist.id}>{dist.nombre}</option>
                             ))}
                           </select>
+
+                          {errores.distrito && (
+                            <p className="text-red-500 text-[11px] mt-1 font-medium">
+                              {errores.distrito}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>

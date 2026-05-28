@@ -180,7 +180,7 @@ export default function CreateCharlaForm() {
         {/* Banner del Evento (Imagen Principal) */}
         <div>
           <label className="block text-xs font-bold uppercase mb-2">
-            Banner del Evento <span>*</span> <span>(Imagen sin fondo en .png, en proporción 1:1 idealmente)</span>
+            Banner del Evento <span>*</span> <span>(Imagen sin fondo en .png, en proporción 5:6 idealmente)</span>
           </label>
           <input
             type="file" name="banner" accept="image/*"

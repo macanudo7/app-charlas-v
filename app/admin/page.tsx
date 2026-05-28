@@ -1,4 +1,4 @@
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { charlas } from "@/lib/schema";
 import { desc } from "drizzle-orm";
@@ -22,7 +22,7 @@ export default async function AdminDashboard() {
       <div className="max-w-6xl mx-auto px-4 py-14">
         
         {/* Título Central */}
-        <h1 className="text-center text-3xl font-semibold tracking-wide text-[var(--main-color)] mb-12 uppercase">
+        <h1 className="text-center text-3xl font-semibold text-[var(--main-color)] mb-12 uppercase">
           Lista de Charlas
         </h1>
 
@@ -48,7 +48,7 @@ export default async function AdminDashboard() {
         </div>
 
         {/* TABLA DE CHARLAS */}
-        <div className="bg-white shadow-md overflow-hidden">
+        <div className="bg-white shadow-md overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[var(--main-color)] text-white text-xs tracking-wider uppercase font-semibold">

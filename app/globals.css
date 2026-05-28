@@ -45,6 +45,10 @@ form input, form select {
   height: 45px;
   border-width: 2px;
 }
+form input[type="file"] {
+  border: 1px solid #cccccc;
+  height: 50px;
+}
 .loginPage form input{
     border: 1px solid #cccccc;
 }
