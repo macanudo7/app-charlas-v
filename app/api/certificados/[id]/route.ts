@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
-import JSZip from "jszip";
+// import JSZip from "jszip";
 
 import fs from "fs";
 import path from "path";
@@ -61,36 +61,46 @@ export async function GET(
         const plantillaBytes = fs.readFileSync(plantillaPath);
 
         // ZIP FINAL
-        const zip = new JSZip();
+        // const zip = new JSZip();
 
-        // GENERAR PDFS
+        // CREAR UN SOLO PDF
+        const pdfDoc = await PDFDocument.create();
+
+        // EMBEBER IMAGEN (Comentado para generarlo sin fondo)
+        // const plantillaImage = await pdfDoc.embedJpg(plantillaBytes);
+
+        // FUENTE
+        const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+
+        // GENERAR 1 PDF CON TODOS LOS CERTIFICADOS
         for (const participante of inscritos) {
 
             // Crear PDF
-            const pdfDoc = await PDFDocument.create();
+            // const pdfDoc = await PDFDocument.create();
 
             // Crear página
             const page = pdfDoc.addPage([1200, 850]);
 
             // Embed imagen plantilla
-            const plantillaImage = await pdfDoc.embedJpg(plantillaBytes);
+            // const plantillaImage = await pdfDoc.embedJpg(plantillaBytes);
 
-            // Dibujar fondo
-            page.drawImage(plantillaImage, {
-                x: 0,
-                y: 0,
-                width: 1200,
-                height: 850,
-            });
+            // Fondo
+            // page.drawImage(plantillaImage, {
+            //     x: 0,
+            //     y: 0,
+            //     width: 1200,
+            //     height: 850,
+            // });
 
             // Fuente
-            const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+            // const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
             // Nombre completo
             const nombreCompleto =
                 `${participante.nombre} ${participante.apellido}`;
 
-            // NOMBRE PARTICIPANTE
+            // Centrar nombre para el eje X
             const fontSize = 25;
 
             const textWidth = font.widthOfTextAtSize(
@@ -101,10 +111,11 @@ export async function GET(
             const pageWidth = page.getWidth();
             const x = (pageWidth - textWidth) / 2;
 
+            // Nombre de los participantes en cada certificado
             page.drawText(nombreCompleto, {
                 x,
                 y: 420,
-                size: 25,
+                size: fontSize,
                 font,
                 color: rgb(0.1, 0.1, 0.1),
             });
@@ -140,27 +151,30 @@ export async function GET(
             // });
 
             // Guardar PDF
-            const pdfBytes = new Uint8Array(await pdfDoc.save());
+            // const pdfBytes = new Uint8Array(await pdfDoc.save());
 
             // Nombre archivo
-            const nombreArchivo =
-                `${nombreCompleto}.pdf`;
+            // const nombreArchivo =
+            //     `${nombreCompleto}.pdf`;
 
-            // Agregar al ZIP
-            zip.file(nombreArchivo, pdfBytes);
+            // // Agregar al ZIP
+            // zip.file(nombreArchivo, pdfBytes);
         }
 
         // GENERAR ZIP
-        const zipBuffer = await zip.generateAsync({
-            type: "nodebuffer",
-        });
+        // const zipBuffer = await zip.generateAsync({
+        //     type: "nodebuffer",
+        // });
+
+        // Guardar PDF
+        const pdfBytes = await pdfDoc.save();
 
         // RESPUESTA DESCARGA
-        return new Response(zipBuffer as BodyInit, {
+        return new Response(pdfBytes as BodyInit, {
             headers: {
-                "Content-Type": "application/zip",
+                "Content-Type": "application/pdf",
                 "Content-Disposition":
-                    `attachment; filename="certificados-${charla.slug}.zip"`
+                    `attachment; filename="certificados-${charla.slug}.pdf"`
             },
         });
 
@@ -169,7 +183,7 @@ export async function GET(
         console.error(error);
 
         return NextResponse.json(
-            { error: "Error generando certificados" },
+            { error: "Error al generar certificados" },
             { status: 500 }
         );
     }
