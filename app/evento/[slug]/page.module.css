@@ -125,7 +125,7 @@
 }
 .eventFormSucess{
     color: var(--main-color);
-    background: #dadeff;
+    background: #eceefb;
     border-color: var(--dark-accent-color);
 }
 .eventFormSucess button{

@@ -32,13 +32,13 @@ export default function FiltroCharla({ charlasList }: { charlasList: CharlaSelec
   }, [charla, dni, fecha, router]);
 
   return (
-    <div className="bg-white rounded shadow-sm border border-gray-200 p-4">
+    <div className="bg-white shadow-sm border border-gray-200 p-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         
         {/* Filtro por Charlas */}
         <div>
           <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
-            Filtrar por Capacitación
+            Filtrar por evento
           </label>
           <select
             value={charla}
