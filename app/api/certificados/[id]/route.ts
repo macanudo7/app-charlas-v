@@ -62,7 +62,7 @@ export async function GET(
 
         // ZIP FINAL
         // const zip = new JSZip();
-        //Macanudo Team 
+        //Macanudo Team  2
 
         // CREAR UN SOLO PDF
         const pdfDoc = await PDFDocument.create();
