@@ -11,12 +11,20 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async redirects() {
+  // async redirects() {
+  //   return [
+  //     {
+  //       source: "/",
+  //       destination: "/evento/orgullo-maestro",
+  //       permanent: false,
+  //     },
+  //   ];
+  // },
+  async rewrites() {
     return [
       {
-        source: "/",
-        destination: "/evento/orgullo-maestro",
-        permanent: false,
+        source: '/',
+        destination: '/evento/orgullo-maestro',
       },
     ];
   },
