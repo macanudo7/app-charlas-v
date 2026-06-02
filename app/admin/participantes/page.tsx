@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { obtenerParticipantes, obtenerCharlasSelect } from "@/lib/actions";
 import FiltroCharla from "./filtro-charla";
+import BotonExportarExcel from "./boton-excel"; // 👈 Importamos el nuevo botón
 import participantStyle from "@/app/participantes/page.module.css";
 
 interface PageProps {
@@ -37,11 +38,25 @@ export default async function ParticipantesPage({ searchParams }: PageProps) {
           Participantes Registrados ({listaParticipantes.length})
         </h1>
 
-        {/* 🔍 COMPONENTE DE FILTRADO INTERACTIVO */}
-        <FiltroCharla charlasList={listaCharlas} />
+        {/* 🔍 BARRA DE ACCIONES */}
+        <div className="bg-white p-4 rounded border border-gray-100 shadow-sm space-y-4">
+          
+          {/* Fila superior: Filtros (Ocupa todo el ancho disponible) */}
+          <div className="block w-full">
+            <FiltroCharla charlasList={listaCharlas} />
+          </div>
+
+          {/* Fila inferior: Botón Excel alineado al extremo derecho */}
+          <div className="text-right">
+            <div className="inline-block">
+              <BotonExportarExcel data={listaParticipantes} />
+            </div>
+          </div>
+
+        </div>
 
         {/* TABLA RESPONSIVA */}
-        <div className="bg-white rounded shadow-sm border border-gray-200 overflow-hidden mt-3">
+        <div className="bg-white rounded shadow-sm border border-gray-200 overflow-hidden mt-6">
           {listaParticipantes.length === 0 ? (
             <div className="p-12 text-center text-gray-500 space-y-2">
               <span className="text-3xl">👥</span>
@@ -65,9 +80,8 @@ export default async function ParticipantesPage({ searchParams }: PageProps) {
                 </thead>
                 <tbody className="divide-y divide-gray-200 text-sm text-gray-700">
                   {listaParticipantes.map((item, index) => (
-                    // Usamos una combinación de ID y charlaId para garantizar una key única por fila repetida
                     <tr key={`${item.id}-${item.charlaId}-${index}`} className="hover:bg-gray-50 transition-colors">
-
+                      
                       {/* DNI */}
                       <td className="py-3.5 px-4 font-bold text-gray-900">
                         {item.dni}
@@ -78,7 +92,7 @@ export default async function ParticipantesPage({ searchParams }: PageProps) {
                         {item.apellido}, {item.nombre}
                       </td>
 
-                      {/* 🚀 CAPACITACIÓN SLUG (Nueva celda renderizada) */}
+                      {/* CAPACITACIÓN SLUG */}
                       <td className="py-3.5 px-4">
                         <span className="bg-cyan-50 border border-cyan-300 text-cyan-800 text-xs font-bold px-2 py-1 rounded lowercase">
                           {item.charlaSlug}
@@ -112,7 +126,7 @@ export default async function ParticipantesPage({ searchParams }: PageProps) {
                         )}
                       </td>
 
-                      {/* Fecha (Usamos la fecha de la inscripción, no de creación del usuario) */}
+                      {/* Fecha */}
                       <td className="py-3.5 px-3 text-center text-xs text-gray-500">
                         {item.fechaInscripcion ? new Date(item.fechaInscripcion).toLocaleDateString("es-PE", {
                           day: "2-digit",

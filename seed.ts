@@ -7,13 +7,13 @@ async function main() {
   console.log('🌱 Iniciando el sembrado de datos (Solo Administrador)...');
 
   // Encriptamos la contraseña
-  const hashedAdminPassword = await bcrypt.hash('admin123456', 10);
+  const hashedAdminPassword = await bcrypt.hash('eZ9O623Ad9xR', 10);
   
   console.log('👤 Insertando usuario administrador...');
   
   await db.insert(users).values({
     nombre: 'Administrador Sistema',
-    email: 'admin@correo.com', // Puedes cambiarlo por el que prefieras
+    email: 'adminyura@yura.com', // Puedes cambiarlo por el que prefieras
     password: hashedAdminPassword,
     role: 'admin',
   }).onConflictDoNothing(); 
