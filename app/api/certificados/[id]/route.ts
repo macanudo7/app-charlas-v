@@ -48,6 +48,13 @@ export async function GET(
             )
             .where(eq(inscripciones.charlaId, charlaId));
 
+        inscritos.sort((a, b) => {
+            const nombreA = `${a.apellido} ${a.nombre}`.toLowerCase();
+            const nombreB = `${b.apellido} ${b.nombre}`.toLowerCase();
+
+            return nombreA.localeCompare(nombreB, "es");
+        });
+
 
         // LEER PLANTILLA
         const plantillaPath = path.join(
