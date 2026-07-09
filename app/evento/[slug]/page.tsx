@@ -451,7 +451,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                             setNombre(e.target.value);
                             limpiarError("nombre");
                           }}
-                          readOnly={nombre.length > 0}
+                          // readOnly={nombre.length > 0}
                           className={`w-full border px-3 py-2 text-sm focus:outline-none ${!nombre && errores.nombre
                             ? "border-red-500 bg-red-50"
                             : nombre.length > 0
@@ -481,7 +481,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                             setApellido(e.target.value);
                             limpiarError("apellido");
                           }}
-                          readOnly={apellido.length > 0}
+                          // readOnly={apellido.length > 0}
                           className={`w-full border px-3 py-2 text-sm focus:outline-none ${!apellido && errores.apellido
                             ? "border-red-500 bg-red-50"
                             : apellido.length > 0
