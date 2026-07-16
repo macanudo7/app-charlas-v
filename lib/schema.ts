@@ -52,6 +52,7 @@ export const inscripciones = pgTable("inscripciones", {
   participanteId: integer("participante_id").notNull().references(() => participantes.id, { onDelete: "cascade" }),
   fechaInscripcion: timestamp("fecha_inscripcion").defaultNow(),
   asistio: boolean("asistio").default(false), // Para marcar asistencia en el evento
+  comoTeEnteraste: varchar("como_te_enteraste", { length: 30 }),
 }, (t) => ({
   // Definimos una clave primaria compuesta para evitar duplicados
   pk: primaryKey({ columns: [t.charlaId, t.participanteId] }),
@@ -77,3 +78,5 @@ export const ubigeoPeruDistricts = pgTable("ubigeo_peru_districts", {
   provinceId: varchar("province_id", { length: 4 }),
   departmentId: varchar("department_id", { length: 2 }),
 });
+
+

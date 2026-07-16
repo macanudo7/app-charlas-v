@@ -74,6 +74,7 @@ export default async function ParticipantesPage({ searchParams }: PageProps) {
                     <th className="py-3 px-4 text-center">Capacitación (Slug)</th>
                     <th className="py-3 px-4 text-center">EMAIL</th>
                     <th className="py-3 px-4 text-center">TELEFONO</th>
+                    <th className="py-3 px-4 text-center">¿Cómo se enteró?</th>
                     <th className="py-3 px-4 text-center">Ubicación (Ubigeo)</th>
                     <th className="py-3 px-4 text-center">F. Registro</th>
                   </tr>
@@ -107,6 +108,10 @@ export default async function ParticipantesPage({ searchParams }: PageProps) {
                       {/* Telefono */}
                       <td className="py-3.5 px-4 text-xs text-gray-500">
                         {item.telefono || "Sin telefono"}
+                      </td>
+
+                      <td className="py-3.5 px-4 text-xs text-gray-500 uppercase text-center">
+                        {item.comoTeEnteraste || "-"}
                       </td>
 
                       {/* Ubicación */}

@@ -134,6 +134,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
     departamento: "",
     provincia: "",
     distrito: "",
+    comoTeEnteraste: "",
   });
 
   const validarFormulario = () => {
@@ -147,6 +148,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
       departamento: "",
       provincia: "",
       distrito: "",
+      comoTeEnteraste: "",
     };
 
     let valido = true;
@@ -207,6 +209,10 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
       nuevosErrores.distrito = "Seleccione un distrito después de provincia";
       valido = false;
     }
+    if (!comoTeEnteraste) {
+      nuevosErrores.comoTeEnteraste = "Seleccione cómo se enteró.";
+      valido = false;
+    }
 
     setErrores(nuevosErrores);
 
@@ -232,6 +238,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
   const [mensajeExito, setMensajeExito] = useState("");
   const [errorFormulario, setErrorFormulario] = useState("");
   const [telefono, setTelefono] = useState("");
+  const [comoTeEnteraste, setComoTeEnteraste] = useState("");
 
   // Handler que se ejecuta al enviar el formulario completo
   const handleSubmitRegistro = async (e: React.FormEvent) => {
@@ -240,6 +247,8 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
     setMensajeExito("");
 
     const esValido = validarFormulario();
+
+    
 
     if (!esValido) {
       setErrorFormulario("Complete todos los campos obligatorios.");
@@ -262,14 +271,15 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
       departamento: nombreDep,
       provincia: nombreProv,
       distrito: nombreDist,
-      slug: slug
+      slug: slug,
+      comoTeEnteraste,
     });
 
     setGuardando(false);
 
     if (resultado.success) {
       setMensajeExito("¡Registro completado con éxito! Tu asistencia ha sido confirmada.");
-      setDni(""); setNombre(""); setApellido(""); setCorreo(""); setTelefono("");
+      setDni(""); setNombre(""); setApellido(""); setCorreo(""); setTelefono(""); setComoTeEnteraste("");
 
       // Al limpiar, regresamos a la selección predeterminada del evento
       if (evento?.departamentoLugar) {
@@ -544,6 +554,38 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                         {errores.telefono && (
                           <p className="text-red-500 text-[11px] mt-1 font-medium">
                             {errores.telefono}
+                          </p>
+                        )}
+                      </div>
+
+
+                      {/* ¿Cómo te enteraste? */}
+                      <div>
+                        <label className="block text-xs font-bold uppercase mb-1">
+                          ¿Cómo te enteraste? <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          name="comoTeEnteraste"
+                          value={comoTeEnteraste}
+                          onChange={(e) => {
+                            setComoTeEnteraste(e.target.value);
+                            limpiarError("comoTeEnteraste");
+                          }}
+                          className={`w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none ${
+                            errores.comoTeEnteraste ? "border-red-500" : "border-gray-300 focus:border-[#1b1c54]"
+                          }`}
+                        >
+                          <option value="">-- Selecciona una opción --</option>
+                          <option value="facebook">Facebook</option>
+                          <option value="instagram">Instagram</option>
+                          <option value="tiktok">TikTok</option>
+                          <option value="volanteo">Volanteo</option>
+                          <option value="invitado">Invitado</option>
+                        </select>
+
+                        {errores.comoTeEnteraste && (
+                          <p className="text-red-500 text-[11px] mt-1 font-medium">
+                            {errores.comoTeEnteraste}
                           </p>
                         )}
                       </div>

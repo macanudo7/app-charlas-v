@@ -291,6 +291,7 @@ export async function registrarParticipante(data: {
   provincia?: string;
   distrito?: string;
   slug: string;
+  comoTeEnteraste?: string;
 }) {
   // 1. Validaciones básicas de seguridad del lado del servidor
   if (!data.dni || data.dni.length !== 8) {
@@ -301,6 +302,9 @@ export async function registrarParticipante(data: {
   }
   if (!data.departamento || !data.provincia || !data.distrito) {
     return { success: false, error: "Debes seleccionar tu Departamento, Provincia y Distrito obligatoriamente." };
+  }
+  if (!data.comoTeEnteraste) {
+        return { success: false, error: "Debes seleccionar cómo te enteraste." };
   }
 
   try {
@@ -377,6 +381,7 @@ export async function registrarParticipante(data: {
     await db.insert(inscripciones).values({
       charlaId: charlaReal.id, // Garantizado que no será null
       participanteId: participante.id,
+      comoTeEnteraste: data.comoTeEnteraste,
     });
 
     return { success: true };
@@ -406,9 +411,11 @@ export async function obtenerParticipantes(charlaId?: string,
         distrito: participantes.distrito,
         // 🚀 NUEVOS CAMPOS DESDE EL JOIN
         fechaInscripcion: inscripciones.fechaInscripcion,
+        comoTeEnteraste: inscripciones.comoTeEnteraste,
         charlaId: inscripciones.charlaId,
         charlaSlug: charlas.slug, // El slug que necesitas para la columna
         charlaNombre: charlas.nombreEvento // Por si quieres pintar el nombre largo
+
       })
       .from(inscripciones)
       // 2. Unimos con participantes
