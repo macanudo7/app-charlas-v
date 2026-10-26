@@ -83,6 +83,7 @@
     font-weight: 600;
 }
 .eventFooter{
+    display: none;
     background: url(/img/bg-concreteras-footer.webp);
     background-position: center;
     background-size: cover;
