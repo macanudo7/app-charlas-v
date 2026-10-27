@@ -91,15 +91,15 @@ export async function GET(
             const page = pdfDoc.addPage([1200, 850]);
 
             // Embed imagen plantilla
-            // const plantillaImage = await pdfDoc.embedJpg(plantillaBytes);
+            const plantillaImage = await pdfDoc.embedJpg(plantillaBytes);
 
             // Fondo
-            // page.drawImage(plantillaImage, {
-            //     x: 0,
-            //     y: 0,
-            //     width: 1200,
-            //     height: 850,
-            // });
+            page.drawImage(plantillaImage, {
+                x: 0,
+                y: 0,
+                width: 1200,
+                height: 850,
+            });
 
             // Fuente
             // const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -109,7 +109,7 @@ export async function GET(
                 `${participante.nombre} ${participante.apellido}`;
 
             // Centrar nombre para el eje X
-            const fontSize = 25;
+            const fontSize = 28;
 
             const textWidth = font.widthOfTextAtSize(
                 nombreCompleto,
@@ -117,12 +117,12 @@ export async function GET(
             );
 
             const pageWidth = page.getWidth();
-            const x = (pageWidth - textWidth) / 2;
+            const x = (pageWidth - textWidth) / 2 + 40;
 
             // Nombre de los participantes en cada certificado
             page.drawText(nombreCompleto, {
                 x,
-                y: 420,
+                y: 370,
                 size: fontSize,
                 font,
                 color: rgb(0.1, 0.1, 0.1),
