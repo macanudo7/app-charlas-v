@@ -106,7 +106,7 @@ export async function GET(
 
             // Nombre completo
             const nombreCompleto =
-                `${participante.nombre} ${participante.apellido}`;
+                `${participante.nombre} ${participante.apellido}`.toUpperCase();
 
             // Centrar nombre para el eje X
             const fontSize = 28;
