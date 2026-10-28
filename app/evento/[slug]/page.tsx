@@ -562,7 +562,7 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                       {/* ¿Cómo te enteraste? */}
                       <div>
                         <label className="block text-xs font-bold uppercase mb-1">
-                          ¿Cómo te enteraste? <span className="text-red-500">*</span>
+                          ¿A qué institución perteneces? <span className="text-red-500">*</span>
                         </label>
                         <select
                           name="comoTeEnteraste"
@@ -576,11 +576,9 @@ export default function EventoPublicPage({ params, charlaId }: EventoPageProps) 
                           }`}
                         >
                           <option value="">-- Selecciona una opción --</option>
-                          <option value="facebook">Facebook</option>
-                          <option value="instagram">Instagram</option>
-                          <option value="tiktok">TikTok</option>
-                          <option value="volanteo">Volanteo</option>
-                          <option value="invitado">Invitado</option>
+                          <option value="ucsm">UCSM</option>
+                          <option value="capeco">CAPECO</option>
+                          <option value="incidencia-general">Incidencia / Público General</option>
                         </select>
 
                         {errores.comoTeEnteraste && (

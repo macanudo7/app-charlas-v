@@ -21,7 +21,7 @@ export default function BotonExportarExcel({ data }: BotonExcelProps) {
       { header: "CAPACITACIÓN (SLUG)", key: "slug", width: 25 },
       { header: "EMAIL", key: "email", width: 30 },
       { header: "TELÉFONO", key: "telefono", width: 15 },
-      { header: "CÓMO SE ENTERÓ", key: "comoTeEnteraste", width: 18 },
+      { header: "A QUÉ INSTITUCIÓN PERTENECE", key: "comoTeEnteraste", width: 18 },
       { header: "DEPARTAMENTO", key: "departamento", width: 18 },
       { header: "PROVINCIA", key: "provincia", width: 18 },
       { header: "DISTRITO", key: "distrito", width: 18 },
